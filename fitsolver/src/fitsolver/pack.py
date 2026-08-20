@@ -55,6 +55,33 @@ def split_compatible(items: Sequence[Item]) -> list[list[Item]]:
     return groups
 
 
+def fits_any_carton(item: Item, cartons: Sequence[Carton]) -> bool:
+    """Could this item go in some empty carton, in some permitted orientation?
+
+    False means no packing decision can ever place it, so it is rejected up
+    front rather than discovered later. Checks mass as well as geometry: an
+    item under every carton's mass limit still needs somewhere to fit.
+    """
+    for carton in cartons:
+        if (carton.max_contents_mass is not None
+                and item.mass > carton.max_contents_mass):
+            continue
+        for _, dims in orientations(item):
+            if all(dims[i] <= carton.inner_dims[i] for i in range(3)):
+                return True
+    return False
+
+
+def _reject_message(item: Item, cartons: Sequence[Carton]) -> str:
+    """Why this item could not be packed, in the packer's terms."""
+    geometrically_fits = any(
+        all(dims[i] <= carton.inner_dims[i] for i in range(3))
+        for carton in cartons for _, dims in orientations(item))
+    if geometrically_fits:
+        return "Fits geometrically, but exceeds the mass limit of every carton"
+    return "Exceeds every carton in all permitted orientations"
+
+
 def place(item: Item, carton: Carton, placed: list[Placement],
           contents_mass: int) -> Placement | None:
     """First feasible placement, scanning corner points bottom-left-first.
@@ -106,6 +133,11 @@ def pack_one(ordering: Sequence[Item], cartons: Sequence[Carton]
     Nothing is dropped: items past the window are considered for the next
     carton, and the ordering is volume-descending, so the near-term items
     were the right ones to try anyway.
+
+    Callers must filter out items no carton can ever hold (see
+    fits_any_carton). Otherwise a window filled entirely with such items
+    packs nothing, and every remaining item behind them is abandoned
+    unplaced -- a false rejection of goods that fit.
     """
     remaining = list(ordering)
     out: list[PackedCarton] = []
@@ -145,16 +177,25 @@ def pack(items: Sequence[Item], cartons: Sequence[Carton],
     """
     t0 = time.monotonic()
 
-    all_cartons: list[PackedCarton] = []
+    # Items no carton can ever hold are rejected before packing. They would
+    # otherwise fill pack_one's CHUNK window, pack nothing, and take every
+    # placeable item behind them down as a false rejection.
+    packable: list[Item] = []
     all_unplaced: list[Item] = []
-    for group in split_compatible(items):
+    for item in items:
+        (packable if fits_any_carton(item, cartons) else all_unplaced).append(item)
+
+    all_cartons: list[PackedCarton] = []
+    for group in split_compatible(packable):
         ordering = sorted(group, key=lambda i: i.volume, reverse=True)
         packed, unplaced = pack_one(ordering, cartons)
         all_cartons.extend(packed)
         all_unplaced.extend(unplaced)
 
+    # The message names the actual cause. "Too big" on an item that fits but
+    # is too heavy sends a packer looking for the wrong problem.
     rejects = [Reject(item_ref=i.ref, reason_code="NO_FITTING_CARTON",
-                      message="Exceeds every carton in all permitted orientations")
+                      message=_reject_message(i, cartons))
                for i in all_unplaced]
     return Solution(cartons=all_cartons, rejects=rejects, seed=seed,
                     time_budget_ms=time_budget_ms,

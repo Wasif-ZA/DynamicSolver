@@ -95,7 +95,7 @@
         "required": ["item_ref", "reason_code", "message"],
         "properties": {
           "item_ref": { "type": "string" },
-          "reason_code": { "enum": ["NO_FITTING_CARTON", "INVALID_DIMENSIONS", "MISSING_MASS", "UNKNOWN_DG_CLASS", "UNPLACEABLE"] },
+          "reason_code": { "enum": ["NO_FITTING_CARTON", "INVALID_DIMENSIONS", "MISSING_MASS", "INVALID_QUANTITY", "INVALID_ROTATION", "INVALID_FIELD", "UNKNOWN_DG_CLASS", "UNPLACEABLE"] },
           "message": { "type": "string" }
         }
       }

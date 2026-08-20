@@ -16,6 +16,6 @@ from .pack import pack
 
 def solve(payload: dict) -> dict:
     items, cartons, input_rejects, budget_ms, order_id = io.parse_request(payload)
-    seed = io.request_seed(payload)
+    seed = io.request_seed(items, cartons)
     solution = pack(items, cartons, time_budget_ms=budget_ms, seed=seed)
     return io.emit_document(solution, order_id, input_rejects)
