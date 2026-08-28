@@ -1,0 +1,22 @@
+[
+  {
+    "Reference": "SML",
+    "Width": 150,
+    "Length": 150,
+    "Depth": 150,
+    "MaxWeight": 7.9,
+    "BoxWeight": 0.5,
+    "Active": true,
+    "MaximumBoxes": 10
+  },
+  {
+    "Reference": "MED",
+    "Width": 150,
+    "Length": 150,
+    "Depth": 150,
+    "MaxWeight": 7.9,
+    "BoxWeight": 0.5,
+    "Active": true,
+    "MaximumBoxes": 10
+  }
+]

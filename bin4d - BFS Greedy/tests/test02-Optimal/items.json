@@ -1,0 +1,76 @@
+[
+	{
+		"ItemCode": "ITM-001",
+		"ItemReference": "Widget A",
+		"Width": 75,
+		"Length": 75,
+		"Depth": 75,
+		"Weight": 1,
+		"BoxGroup": "GROUP-A"
+	},
+	{
+		"ItemCode": "ITM-002",
+		"ItemReference": "Widget B",
+		"Width": 75,
+		"Length": 75,
+		"Depth": 75,
+		"Weight": 1,
+		"BoxGroup": "GROUP-A"
+	},
+		{
+		"ItemCode": "ITM-003",
+		"ItemReference": "Widget C",
+		"Width": 75,
+		"Length": 75,
+		"Depth": 75,
+		"Weight": 1,
+		"BoxGroup": "GROUP-A"
+	},
+	{
+		"ItemCode": "ITM-004",
+		"ItemReference": "Widget D",
+		"Width": 75,
+		"Length": 75,
+		"Depth": 75,
+		"Weight": 1,
+		"BoxGroup": "GROUP-A"
+	},
+		{
+		"ItemCode": "ITM-005",
+		"ItemReference": "Widget E",
+		"Width": 75,
+		"Length": 75,
+		"Depth": 75,
+		"Weight": 1,
+		"BoxGroup": "GROUP-A"
+	},
+	{
+		"ItemCode": "ITM-006",
+		"ItemReference": "Widget F",
+		"Width": 75,
+		"Length": 75,
+		"Depth": 75,
+		"Weight": 1,
+		"BoxGroup": "GROUP-A"
+	},
+		{
+		"ItemCode": "ITM-007",
+		"ItemReference": "Widget G",
+		"Width": 75,
+		"Length": 75,
+		"Depth": 75,
+		"Weight": 1,
+		"BoxGroup": "GROUP-A"
+	},
+	{
+		"ItemCode": "ITM-008",
+		"ItemReference": "Widget H",
+		"Width": 75,
+		"Length": 75,
+		"Depth": 75,
+		"Weight": 1,
+		"BoxGroup": "GROUP-A"
+	}
+
+
+]
