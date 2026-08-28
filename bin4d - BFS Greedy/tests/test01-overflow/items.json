@@ -2,18 +2,18 @@
 	{
 		"ItemCode": "ITM-001",
 		"ItemReference": "Widget A",
-		"Width": 100,
-		"Length": 200,
-		"Depth": 50,
+		"Width": 1000,
+		"Length": 2000,
+		"Depth": 500,
 		"Weight": 1,
 		"BoxGroup": "GROUP-A"
 	},
 	{
 		"ItemCode": "ITM-002",
 		"ItemReference": "Widget B",
-		"Width": 300,
-		"Length": 150,
-		"Depth": 75,
+		"Width": 3000,
+		"Length": 1500,
+		"Depth": 750,
 		"Weight": 2.8
 	},
 	{

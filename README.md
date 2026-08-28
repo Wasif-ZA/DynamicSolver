@@ -1,80 +1,47 @@
 # DynamicSolver
 
-The packing solver for the COMP4050 warehouse packing project.
+## Project Overview: 
 
-Given a list of items and the box types a warehouse stocks, work out **which boxes to use** and
-**where each item goes inside them**.
+Dynamic Fit acts as an upgrade for an already existing legacy system from Thomax Technology pty ltd. It builds upon existing frameworks like Box Packer (see https://github.com/dvdoug/boxpacker and )
 
-Written in C++20. See [ADR-0004](docs/decisions/0004-cpp-implementation.md).
+## Problem Definition
 
-> **This repo is documentation only right now.** No source, no build, nothing to run. Sprint 1 is
-> for agreeing what we are building and what we hand the other teams. Code comes next.
+Given a list of items and the box types a warehouse stocks Dynamic Solver outputs out **which boxes to use** and
+**where each item goes inside them**. This decision making aims to achieve optimal efficiency within in a strict timeframe, ensuring a smooth workflow within the warehouse. 
 
-## Scope: we build the solver, nothing else
 
-| Piece | Who builds it |
+## Scope
+
+| Deliverables | Sub-Team Responsible |
 |---|---|
-| **Packing solver** | **Us** |
-| 3D visualiser | Another team |
-| Portal / web front end | Another team |
+| Dynamic Fit Algorithm* | **Dynamic Solver** |
+| Output JSON Files* | **Dynamic Solver** |
+| Portal / Web Front End | Dynamic Portal |
+| Box Visualiser | Dynamic Visualiser |
 
-We do not write visualiser or portal code. We support those teams by publishing a stable,
-documented interface and worked examples they can build against before our solver is finished.
+*These deliverables are considered in-scope for Dynamic Solver, other deliverables are manages and implemented by other groups
+of the team. The interfacing contract can be found here [`docs/contract.md`](docs/contract.md). 
 
-**That interface is [`docs/contract.md`](docs/contract.md).** It is our real deliverable to the rest
-of the project. Treat a breaking change to it as a breaking change to someone else's sprint.
 
-## Start here
+## Reqirements
 
-| Doc | What it covers |
+|Req ID| Description|
 |---|---|
-| [`docs/client-requirements.md`](docs/client-requirements.md) | What the client asked for, from the Q&A session |
-| [`docs/client-qa-2026-08-05.md`](docs/client-qa-2026-08-05.md) | The session record behind it. What he said, in his order, garbled passages marked |
-| [`docs/contract.md`](docs/contract.md) | The input/output interface other teams consume, with worked examples |
-| [`docs/architecture.md`](docs/architecture.md) | How the solver is structured and why |
-| [`docs/decisions/`](docs/decisions/) | Decision log. Read before re-opening a settled question |
-| [`CONTRIBUTING.md`](CONTRIBUTING.md) | Branching, PRs, and how we log work for the unit |
+| 01 | Dynamic Solver SHALL optimally pack into as few boxes, with minimal space wasted, as possible. |
+| 02 | Dynamic Solver SHALL solve and output a result within 0.33-0.66 seconds accounting for an overall project run time of 1-2 seconds. |
+| 03 | Dynamic Solver SHALL deliver a system which is scalable from a minimum of 1000 items to a realistic maximum limit, that a warehouse can handle, estimated, 50,000. |
+| 04 | Dynamic Solver SHALL output a JSON file which can be read and executed on by other sub-system teams. |
+| 05 | Dynamic Solver SHALL output an error if an item fails to find a fit or is too heavy for any box. |
 
-## The problem in one paragraph
 
-This is 3D bin packing, which is NP-hard, so we are not chasing a provably optimal answer. We need a
-good answer fast. The client's stated bar is **1 to 2 seconds** for a single order. Load is low: a
-large warehouse does 50,000 orders across a whole day, and the biggest realistic burst is around
-1,000. Optimise for latency on one order, not for throughput.
+## Out-of-Scope Requirements
 
-## What the client actually cares about
+   - The physical weight distribution of items within a box is not regarded for and is considered out-of-scope and not a requirement. 
 
-Ranked, in the client's own priority order:
+## Team Direction and Meeting Outcomes
 
-1. **Efficiency.** Pack into as few boxes, with as little wasted space, as possible.
-2. **Extensibility.** He said this repeatedly and unprompted. The end goal is that someone develops
-   this further after the unit ends. He named object-oriented design and gave an example: a box
-   abstraction where a shipping container and a small parcel are the same kind of thing.
-3. **Packing groups.** Certain items legally cannot share a box (dangerous goods classes). Must be
-   generic enough to also express arbitrary grouping, like "keyboards in one box, headphones in
-   another". This is a core requirement, not a stretch goal.
+| Sprint | Description|
+|---|:---|
+| Sprint 0 | Intitial project decision were made: <ul><li>Communication methods</li><li>Potential team interfacings</li>Scheduled weekly meetings<li>Algorithm language (Python or C++)</li><ul> |
+| Sprint 1 | MVP Defined: <ul><li>A simple **best fit** algorithm that can pack boxes</li><li>Not an optimal solution</li><li>Python</li><ul> |
 
-He also wants **multiple modes** eventually. Standard mode is real geometry. Fluid mode ignores
-geometry and packs by volume, for liquids and squishable apparel. Own-packaging mode skips boxing
-entirely for items that ship in their own carton. We build standard mode. The architecture should
-make the other two obvious drop-ins, because that is what he means by extensibility.
-
-## Explicitly out of scope
-
-The client ruled these out. Do not build them.
-
-- Authentication and access control. Already exists on their side.
-- Fragile and this-way-up handling. Fragile items are handled separately in reality.
-- Rate limiting and request throttling. Wrong shape of load.
-- Box weight limits. Real, but they are not hitting it yet. Model the field, skip the logic.
-
-## Next
-
-Before anyone writes solver code:
-
-1. **Ask the client the two blocking questions** in
-   [open questions](docs/client-requirements.md#open-questions-for-the-client). Can items be
-   rotated, and are box dimensions internal or external. He is back around 2026-08-19.
-2. **Pick the toolchain.** Build system, JSON library, test framework. Write it up as ADR-0005.
-3. **Send the other teams [`docs/contract.md`](docs/contract.md)** so they can start now rather than
-   waiting on us.
