@@ -1,0 +1,4284 @@
+[
+  {
+    "ItemCode": "ITM-001",
+    "ItemReference": "Tube D",
+    "Width": 27,
+    "Length": 25,
+    "Depth": 19,
+    "Weight": 0.06,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-002",
+    "ItemReference": "Remote C",
+    "Width": 128,
+    "Length": 127,
+    "Depth": 83,
+    "Weight": 1.87,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-003",
+    "ItemReference": "Controller G",
+    "Width": 299,
+    "Length": 259,
+    "Depth": 167,
+    "Weight": 1.88
+  },
+  {
+    "ItemCode": "ITM-004",
+    "ItemReference": "Widget Y",
+    "Width": 657,
+    "Length": 516,
+    "Depth": 374,
+    "Weight": 7.06,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-005",
+    "ItemReference": "Sensor C",
+    "Width": 95,
+    "Length": 94,
+    "Depth": 97,
+    "Weight": 0.54,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-006",
+    "ItemReference": "Remote D",
+    "Width": 793,
+    "Length": 640,
+    "Depth": 682,
+    "Weight": 20.21
+  },
+  {
+    "ItemCode": "ITM-007",
+    "ItemReference": "Lamp S",
+    "Width": 58,
+    "Length": 55,
+    "Depth": 49,
+    "Weight": 1.2
+  },
+  {
+    "ItemCode": "ITM-008",
+    "ItemReference": "Housing D",
+    "Width": 108,
+    "Length": 131,
+    "Depth": 66,
+    "Weight": 0.41,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-009",
+    "ItemReference": "Coupler W",
+    "Width": 931,
+    "Length": 636,
+    "Depth": 711,
+    "Weight": 29.78,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-010",
+    "ItemReference": "Panel O",
+    "Width": 131,
+    "Length": 138,
+    "Depth": 91,
+    "Weight": 0.49,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-011",
+    "ItemReference": "Housing B",
+    "Width": 505,
+    "Length": 437,
+    "Depth": 233,
+    "Weight": 6.32
+  },
+  {
+    "ItemCode": "ITM-012",
+    "ItemReference": "Toy G",
+    "Width": 221,
+    "Length": 346,
+    "Depth": 224,
+    "Weight": 2.84,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-013",
+    "ItemReference": "Controller R",
+    "Width": 124,
+    "Length": 104,
+    "Depth": 94,
+    "Weight": 0.72,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-014",
+    "ItemReference": "Chip P",
+    "Width": 13,
+    "Length": 17,
+    "Depth": 14,
+    "Weight": 0.2
+  },
+  {
+    "ItemCode": "ITM-015",
+    "ItemReference": "Container T",
+    "Width": 34,
+    "Length": 48,
+    "Depth": 34,
+    "Weight": 0.17
+  },
+  {
+    "ItemCode": "ITM-016",
+    "ItemReference": "Widget V",
+    "Width": 294,
+    "Length": 346,
+    "Depth": 197,
+    "Weight": 4.0
+  },
+  {
+    "ItemCode": "ITM-017",
+    "ItemReference": "Figurine D",
+    "Width": 70,
+    "Length": 108,
+    "Depth": 20,
+    "Weight": 1.44
+  },
+  {
+    "ItemCode": "ITM-018",
+    "ItemReference": "Bearing Q",
+    "Width": 559,
+    "Length": 354,
+    "Depth": 352,
+    "Weight": 13.26,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-019",
+    "ItemReference": "Fixture L",
+    "Width": 576,
+    "Length": 698,
+    "Depth": 471,
+    "Weight": 14.1
+  },
+  {
+    "ItemCode": "ITM-020",
+    "ItemReference": "Board A",
+    "Width": 33,
+    "Length": 29,
+    "Depth": 20,
+    "Weight": 0.04
+  },
+  {
+    "ItemCode": "ITM-021",
+    "ItemReference": "Bracket C",
+    "Width": 328,
+    "Length": 137,
+    "Depth": 196,
+    "Weight": 4.06,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-022",
+    "ItemReference": "Controller F",
+    "Width": 127,
+    "Length": 104,
+    "Depth": 47,
+    "Weight": 1.41
+  },
+  {
+    "ItemCode": "ITM-023",
+    "ItemReference": "Mount W",
+    "Width": 135,
+    "Length": 133,
+    "Depth": 67,
+    "Weight": 0.77,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-024",
+    "ItemReference": "Valve H",
+    "Width": 11,
+    "Length": 47,
+    "Depth": 40,
+    "Weight": 0.08,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-025",
+    "ItemReference": "Tube B",
+    "Width": 54,
+    "Length": 92,
+    "Depth": 29,
+    "Weight": 0.87,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-026",
+    "ItemReference": "Cable R",
+    "Width": 46,
+    "Length": 46,
+    "Depth": 35,
+    "Weight": 0.09,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-027",
+    "ItemReference": "Mount D",
+    "Width": 37,
+    "Length": 32,
+    "Depth": 32,
+    "Weight": 0.14
+  },
+  {
+    "ItemCode": "ITM-028",
+    "ItemReference": "Sprocket V",
+    "Width": 285,
+    "Length": 145,
+    "Depth": 75,
+    "Weight": 2.61,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-029",
+    "ItemReference": "Valve G",
+    "Width": 107,
+    "Length": 67,
+    "Depth": 74,
+    "Weight": 0.44,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-030",
+    "ItemReference": "Case Z",
+    "Width": 581,
+    "Length": 350,
+    "Depth": 225,
+    "Weight": 11.17,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-031",
+    "ItemReference": "Bracket Y",
+    "Width": 385,
+    "Length": 508,
+    "Depth": 448,
+    "Weight": 9.29
+  },
+  {
+    "ItemCode": "ITM-032",
+    "ItemReference": "Sprocket F",
+    "Width": 99,
+    "Length": 83,
+    "Depth": 78,
+    "Weight": 0.57
+  },
+  {
+    "ItemCode": "ITM-033",
+    "ItemReference": "Controller V",
+    "Width": 159,
+    "Length": 168,
+    "Depth": 135,
+    "Weight": 1.87,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-034",
+    "ItemReference": "Remote B",
+    "Width": 134,
+    "Length": 132,
+    "Depth": 209,
+    "Weight": 2.91
+  },
+  {
+    "ItemCode": "ITM-035",
+    "ItemReference": "Battery F",
+    "Width": 42,
+    "Length": 15,
+    "Depth": 16,
+    "Weight": 0.04,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-036",
+    "ItemReference": "Charger D",
+    "Width": 891,
+    "Length": 726,
+    "Depth": 696,
+    "Weight": 28.65
+  },
+  {
+    "ItemCode": "ITM-037",
+    "ItemReference": "Bottle V",
+    "Width": 253,
+    "Length": 200,
+    "Depth": 126,
+    "Weight": 1.82
+  },
+  {
+    "ItemCode": "ITM-038",
+    "ItemReference": "Valve I",
+    "Width": 135,
+    "Length": 132,
+    "Depth": 58,
+    "Weight": 0.79
+  },
+  {
+    "ItemCode": "ITM-039",
+    "ItemReference": "Module A",
+    "Width": 264,
+    "Length": 145,
+    "Depth": 78,
+    "Weight": 3.15,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-040",
+    "ItemReference": "Ornament C",
+    "Width": 489,
+    "Length": 445,
+    "Depth": 280,
+    "Weight": 8.82,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-041",
+    "ItemReference": "Rod Z",
+    "Width": 122,
+    "Length": 290,
+    "Depth": 201,
+    "Weight": 2.2
+  },
+  {
+    "ItemCode": "ITM-042",
+    "ItemReference": "Connector I",
+    "Width": 16,
+    "Length": 57,
+    "Depth": 40,
+    "Weight": 0.06,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-043",
+    "ItemReference": "Figurine G",
+    "Width": 338,
+    "Length": 187,
+    "Depth": 189,
+    "Weight": 2.95
+  },
+  {
+    "ItemCode": "ITM-044",
+    "ItemReference": "Sprocket C",
+    "Width": 332,
+    "Length": 190,
+    "Depth": 71,
+    "Weight": 1.01
+  },
+  {
+    "ItemCode": "ITM-045",
+    "ItemReference": "Tube I",
+    "Width": 106,
+    "Length": 120,
+    "Depth": 74,
+    "Weight": 0.93,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-046",
+    "ItemReference": "Fixture R",
+    "Width": 33,
+    "Length": 47,
+    "Depth": 40,
+    "Weight": 0.06,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-047",
+    "ItemReference": "Lamp Z",
+    "Width": 620,
+    "Length": 1060,
+    "Depth": 583,
+    "Weight": 17.88,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-048",
+    "ItemReference": "Ornament Y",
+    "Width": 343,
+    "Length": 224,
+    "Depth": 218,
+    "Weight": 4.0
+  },
+  {
+    "ItemCode": "ITM-049",
+    "ItemReference": "Valve F",
+    "Width": 1015,
+    "Length": 690,
+    "Depth": 851,
+    "Weight": 23.54,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-050",
+    "ItemReference": "Bottle Z",
+    "Width": 308,
+    "Length": 327,
+    "Depth": 123,
+    "Weight": 2.07
+  },
+  {
+    "ItemCode": "ITM-051",
+    "ItemReference": "Sensor M",
+    "Width": 540,
+    "Length": 413,
+    "Depth": 302,
+    "Weight": 12.98,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-052",
+    "ItemReference": "Housing H",
+    "Width": 22,
+    "Length": 35,
+    "Depth": 26,
+    "Weight": 0.1,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-053",
+    "ItemReference": "Ornament U",
+    "Width": 293,
+    "Length": 335,
+    "Depth": 197,
+    "Weight": 2.32,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-054",
+    "ItemReference": "Casing S",
+    "Width": 735,
+    "Length": 619,
+    "Depth": 455,
+    "Weight": 28.7,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-055",
+    "ItemReference": "Container T",
+    "Width": 659,
+    "Length": 797,
+    "Depth": 860,
+    "Weight": 28.14,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-056",
+    "ItemReference": "Container A",
+    "Width": 326,
+    "Length": 257,
+    "Depth": 235,
+    "Weight": 3.88
+  },
+  {
+    "ItemCode": "ITM-057",
+    "ItemReference": "Mount L",
+    "Width": 135,
+    "Length": 92,
+    "Depth": 99,
+    "Weight": 0.61
+  },
+  {
+    "ItemCode": "ITM-058",
+    "ItemReference": "Clip Q",
+    "Width": 102,
+    "Length": 91,
+    "Depth": 71,
+    "Weight": 1.11
+  },
+  {
+    "ItemCode": "ITM-059",
+    "ItemReference": "Mount N",
+    "Width": 217,
+    "Length": 293,
+    "Depth": 104,
+    "Weight": 3.46,
+    "BoxGroup": "GROUP-E"
+  },
+  {
+    "ItemCode": "ITM-060",
+    "ItemReference": "Widget J",
+    "Width": 105,
+    "Length": 150,
+    "Depth": 94,
+    "Weight": 0.99,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-061",
+    "ItemReference": "Case V",
+    "Width": 110,
+    "Length": 144,
+    "Depth": 41,
+    "Weight": 1.06,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-062",
+    "ItemReference": "Tube T",
+    "Width": 146,
+    "Length": 80,
+    "Depth": 59,
+    "Weight": 0.49,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-063",
+    "ItemReference": "Gizmo H",
+    "Width": 912,
+    "Length": 1035,
+    "Depth": 793,
+    "Weight": 14.04,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-064",
+    "ItemReference": "Hinge G",
+    "Width": 218,
+    "Length": 246,
+    "Depth": 162,
+    "Weight": 1.98
+  },
+  {
+    "ItemCode": "ITM-065",
+    "ItemReference": "Widget Y",
+    "Width": 354,
+    "Length": 698,
+    "Depth": 417,
+    "Weight": 6.41
+  },
+  {
+    "ItemCode": "ITM-066",
+    "ItemReference": "Battery O",
+    "Width": 25,
+    "Length": 17,
+    "Depth": 34,
+    "Weight": 0.06,
+    "BoxGroup": "GROUP-E"
+  },
+  {
+    "ItemCode": "ITM-067",
+    "ItemReference": "Controller T",
+    "Width": 146,
+    "Length": 106,
+    "Depth": 98,
+    "Weight": 1.26
+  },
+  {
+    "ItemCode": "ITM-068",
+    "ItemReference": "Container R",
+    "Width": 70,
+    "Length": 145,
+    "Depth": 80,
+    "Weight": 0.79
+  },
+  {
+    "ItemCode": "ITM-069",
+    "ItemReference": "Tube I",
+    "Width": 566,
+    "Length": 548,
+    "Depth": 322,
+    "Weight": 7.02,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-070",
+    "ItemReference": "Valve I",
+    "Width": 119,
+    "Length": 60,
+    "Depth": 37,
+    "Weight": 0.4,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-071",
+    "ItemReference": "Cable C",
+    "Width": 92,
+    "Length": 119,
+    "Depth": 79,
+    "Weight": 0.74,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-072",
+    "ItemReference": "Speaker Y",
+    "Width": 298,
+    "Length": 125,
+    "Depth": 207,
+    "Weight": 2.52,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-073",
+    "ItemReference": "Clip Y",
+    "Width": 103,
+    "Length": 118,
+    "Depth": 89,
+    "Weight": 1.24
+  },
+  {
+    "ItemCode": "ITM-074",
+    "ItemReference": "Board H",
+    "Width": 112,
+    "Length": 53,
+    "Depth": 69,
+    "Weight": 0.64
+  },
+  {
+    "ItemCode": "ITM-075",
+    "ItemReference": "Charger X",
+    "Width": 109,
+    "Length": 66,
+    "Depth": 99,
+    "Weight": 0.89
+  },
+  {
+    "ItemCode": "ITM-076",
+    "ItemReference": "Latch S",
+    "Width": 141,
+    "Length": 284,
+    "Depth": 169,
+    "Weight": 1.54,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-077",
+    "ItemReference": "Bearing M",
+    "Width": 108,
+    "Length": 91,
+    "Depth": 63,
+    "Weight": 1.19,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-078",
+    "ItemReference": "Bearing C",
+    "Width": 311,
+    "Length": 258,
+    "Depth": 73,
+    "Weight": 5.0,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-079",
+    "ItemReference": "Module Y",
+    "Width": 620,
+    "Length": 986,
+    "Depth": 415,
+    "Weight": 38.59,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-080",
+    "ItemReference": "Rod E",
+    "Width": 110,
+    "Length": 135,
+    "Depth": 34,
+    "Weight": 0.93,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-081",
+    "ItemReference": "Bearing Y",
+    "Width": 127,
+    "Length": 127,
+    "Depth": 34,
+    "Weight": 1.21,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-082",
+    "ItemReference": "Sensor S",
+    "Width": 29,
+    "Length": 46,
+    "Depth": 29,
+    "Weight": 0.13
+  },
+  {
+    "ItemCode": "ITM-083",
+    "ItemReference": "Module S",
+    "Width": 280,
+    "Length": 182,
+    "Depth": 86,
+    "Weight": 3.79,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-084",
+    "ItemReference": "Plate Z",
+    "Width": 46,
+    "Length": 60,
+    "Depth": 7,
+    "Weight": 0.12,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-085",
+    "ItemReference": "Module Q",
+    "Width": 123,
+    "Length": 337,
+    "Depth": 167,
+    "Weight": 4.29,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-086",
+    "ItemReference": "Tube O",
+    "Width": 231,
+    "Length": 165,
+    "Depth": 247,
+    "Weight": 3.09
+  },
+  {
+    "ItemCode": "ITM-087",
+    "ItemReference": "Rod Z",
+    "Width": 696,
+    "Length": 547,
+    "Depth": 438,
+    "Weight": 8.79
+  },
+  {
+    "ItemCode": "ITM-088",
+    "ItemReference": "Coupler K",
+    "Width": 344,
+    "Length": 442,
+    "Depth": 430,
+    "Weight": 6.68,
+    "BoxGroup": "GROUP-E"
+  },
+  {
+    "ItemCode": "ITM-089",
+    "ItemReference": "Speaker K",
+    "Width": 30,
+    "Length": 21,
+    "Depth": 36,
+    "Weight": 0.08
+  },
+  {
+    "ItemCode": "ITM-090",
+    "ItemReference": "Figurine I",
+    "Width": 659,
+    "Length": 441,
+    "Depth": 484,
+    "Weight": 4.11
+  },
+  {
+    "ItemCode": "ITM-091",
+    "ItemReference": "Bracket H",
+    "Width": 245,
+    "Length": 262,
+    "Depth": 121,
+    "Weight": 3.76
+  },
+  {
+    "ItemCode": "ITM-092",
+    "ItemReference": "Board O",
+    "Width": 347,
+    "Length": 450,
+    "Depth": 313,
+    "Weight": 8.45,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-093",
+    "ItemReference": "Latch L",
+    "Width": 255,
+    "Length": 208,
+    "Depth": 168,
+    "Weight": 4.99
+  },
+  {
+    "ItemCode": "ITM-094",
+    "ItemReference": "Ornament W",
+    "Width": 198,
+    "Length": 184,
+    "Depth": 119,
+    "Weight": 1.48,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-095",
+    "ItemReference": "Remote Y",
+    "Width": 169,
+    "Length": 175,
+    "Depth": 249,
+    "Weight": 2.94
+  },
+  {
+    "ItemCode": "ITM-096",
+    "ItemReference": "Battery T",
+    "Width": 62,
+    "Length": 74,
+    "Depth": 57,
+    "Weight": 0.5,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-097",
+    "ItemReference": "Remote E",
+    "Width": 56,
+    "Length": 120,
+    "Depth": 57,
+    "Weight": 1.11,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-098",
+    "ItemReference": "Sensor A",
+    "Width": 240,
+    "Length": 242,
+    "Depth": 172,
+    "Weight": 2.36
+  },
+  {
+    "ItemCode": "ITM-099",
+    "ItemReference": "Bearing P",
+    "Width": 14,
+    "Length": 35,
+    "Depth": 36,
+    "Weight": 0.04
+  },
+  {
+    "ItemCode": "ITM-100",
+    "ItemReference": "Sprocket E",
+    "Width": 46,
+    "Length": 29,
+    "Depth": 10,
+    "Weight": 0.3,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-101",
+    "ItemReference": "Plate T",
+    "Width": 415,
+    "Length": 697,
+    "Depth": 467,
+    "Weight": 8.18
+  },
+  {
+    "ItemCode": "ITM-102",
+    "ItemReference": "Clip S",
+    "Width": 756,
+    "Length": 891,
+    "Depth": 717,
+    "Weight": 13.69
+  },
+  {
+    "ItemCode": "ITM-103",
+    "ItemReference": "Sensor Y",
+    "Width": 77,
+    "Length": 83,
+    "Depth": 30,
+    "Weight": 0.4,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-104",
+    "ItemReference": "Panel A",
+    "Width": 138,
+    "Length": 126,
+    "Depth": 80,
+    "Weight": 0.58,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-105",
+    "ItemReference": "Frame W",
+    "Width": 336,
+    "Length": 651,
+    "Depth": 319,
+    "Weight": 14.16
+  },
+  {
+    "ItemCode": "ITM-106",
+    "ItemReference": "Tube S",
+    "Width": 170,
+    "Length": 228,
+    "Depth": 89,
+    "Weight": 3.18
+  },
+  {
+    "ItemCode": "ITM-107",
+    "ItemReference": "Coupler E",
+    "Width": 20,
+    "Length": 60,
+    "Depth": 24,
+    "Weight": 0.19
+  },
+  {
+    "ItemCode": "ITM-108",
+    "ItemReference": "Frame O",
+    "Width": 54,
+    "Length": 29,
+    "Depth": 30,
+    "Weight": 0.28,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-109",
+    "ItemReference": "Case C",
+    "Width": 347,
+    "Length": 230,
+    "Depth": 248,
+    "Weight": 2.29,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-110",
+    "ItemReference": "Housing V",
+    "Width": 594,
+    "Length": 600,
+    "Depth": 210,
+    "Weight": 15.0
+  },
+  {
+    "ItemCode": "ITM-111",
+    "ItemReference": "Coupler S",
+    "Width": 58,
+    "Length": 21,
+    "Depth": 35,
+    "Weight": 0.17,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-112",
+    "ItemReference": "Casing S",
+    "Width": 112,
+    "Length": 61,
+    "Depth": 80,
+    "Weight": 0.65,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-113",
+    "ItemReference": "Sensor F",
+    "Width": 138,
+    "Length": 113,
+    "Depth": 56,
+    "Weight": 1.06,
+    "BoxGroup": "GROUP-E"
+  },
+  {
+    "ItemCode": "ITM-114",
+    "ItemReference": "Gizmo O",
+    "Width": 26,
+    "Length": 30,
+    "Depth": 12,
+    "Weight": 0.29,
+    "BoxGroup": "GROUP-E"
+  },
+  {
+    "ItemCode": "ITM-115",
+    "ItemReference": "Widget V",
+    "Width": 536,
+    "Length": 511,
+    "Depth": 227,
+    "Weight": 6.06,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-116",
+    "ItemReference": "Tube O",
+    "Width": 404,
+    "Length": 436,
+    "Depth": 481,
+    "Weight": 5.44,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-117",
+    "ItemReference": "Board D",
+    "Width": 50,
+    "Length": 48,
+    "Depth": 20,
+    "Weight": 0.22,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-118",
+    "ItemReference": "Controller N",
+    "Width": 17,
+    "Length": 39,
+    "Depth": 12,
+    "Weight": 0.2,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-119",
+    "ItemReference": "Frame Q",
+    "Width": 226,
+    "Length": 333,
+    "Depth": 183,
+    "Weight": 4.92,
+    "BoxGroup": "GROUP-E"
+  },
+  {
+    "ItemCode": "ITM-120",
+    "ItemReference": "Fixture M",
+    "Width": 126,
+    "Length": 115,
+    "Depth": 37,
+    "Weight": 1.32,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-121",
+    "ItemReference": "Figurine Z",
+    "Width": 330,
+    "Length": 120,
+    "Depth": 132,
+    "Weight": 3.9
+  },
+  {
+    "ItemCode": "ITM-122",
+    "ItemReference": "Latch V",
+    "Width": 158,
+    "Length": 234,
+    "Depth": 197,
+    "Weight": 2.94,
+    "BoxGroup": "GROUP-E"
+  },
+  {
+    "ItemCode": "ITM-123",
+    "ItemReference": "Speaker O",
+    "Width": 1045,
+    "Length": 696,
+    "Depth": 757,
+    "Weight": 18.69,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-124",
+    "ItemReference": "Gizmo K",
+    "Width": 300,
+    "Length": 327,
+    "Depth": 157,
+    "Weight": 2.54
+  },
+  {
+    "ItemCode": "ITM-125",
+    "ItemReference": "Fixture P",
+    "Width": 664,
+    "Length": 857,
+    "Depth": 894,
+    "Weight": 28.53
+  },
+  {
+    "ItemCode": "ITM-126",
+    "ItemReference": "Case D",
+    "Width": 236,
+    "Length": 123,
+    "Depth": 244,
+    "Weight": 1.58
+  },
+  {
+    "ItemCode": "ITM-127",
+    "ItemReference": "Fixture C",
+    "Width": 187,
+    "Length": 206,
+    "Depth": 219,
+    "Weight": 3.77
+  },
+  {
+    "ItemCode": "ITM-128",
+    "ItemReference": "Figurine V",
+    "Width": 494,
+    "Length": 462,
+    "Depth": 449,
+    "Weight": 13.6,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-129",
+    "ItemReference": "Valve U",
+    "Width": 193,
+    "Length": 178,
+    "Depth": 83,
+    "Weight": 2.74,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-130",
+    "ItemReference": "Sensor O",
+    "Width": 88,
+    "Length": 53,
+    "Depth": 25,
+    "Weight": 0.62,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-131",
+    "ItemReference": "Lamp N",
+    "Width": 43,
+    "Length": 36,
+    "Depth": 16,
+    "Weight": 0.07,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-132",
+    "ItemReference": "Rod V",
+    "Width": 124,
+    "Length": 68,
+    "Depth": 49,
+    "Weight": 0.8,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-133",
+    "ItemReference": "Widget Z",
+    "Width": 193,
+    "Length": 293,
+    "Depth": 199,
+    "Weight": 1.63,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-134",
+    "ItemReference": "Latch J",
+    "Width": 228,
+    "Length": 296,
+    "Depth": 124,
+    "Weight": 2.83,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-135",
+    "ItemReference": "Kit D",
+    "Width": 123,
+    "Length": 95,
+    "Depth": 93,
+    "Weight": 0.58
+  },
+  {
+    "ItemCode": "ITM-136",
+    "ItemReference": "Gadget V",
+    "Width": 51,
+    "Length": 122,
+    "Depth": 26,
+    "Weight": 1.38
+  },
+  {
+    "ItemCode": "ITM-137",
+    "ItemReference": "Frame Y",
+    "Width": 610,
+    "Length": 480,
+    "Depth": 312,
+    "Weight": 11.0
+  },
+  {
+    "ItemCode": "ITM-138",
+    "ItemReference": "Connector U",
+    "Width": 50,
+    "Length": 51,
+    "Depth": 7,
+    "Weight": 0.11,
+    "BoxGroup": "GROUP-E"
+  },
+  {
+    "ItemCode": "ITM-139",
+    "ItemReference": "Lamp X",
+    "Width": 28,
+    "Length": 30,
+    "Depth": 31,
+    "Weight": 0.07,
+    "BoxGroup": "GROUP-E"
+  },
+  {
+    "ItemCode": "ITM-140",
+    "ItemReference": "Lamp Q",
+    "Width": 189,
+    "Length": 332,
+    "Depth": 102,
+    "Weight": 2.03
+  },
+  {
+    "ItemCode": "ITM-141",
+    "ItemReference": "Kit Z",
+    "Width": 93,
+    "Length": 64,
+    "Depth": 79,
+    "Weight": 1.45,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-142",
+    "ItemReference": "Charger Z",
+    "Width": 143,
+    "Length": 322,
+    "Depth": 161,
+    "Weight": 1.06,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-143",
+    "ItemReference": "Lamp V",
+    "Width": 187,
+    "Length": 269,
+    "Depth": 157,
+    "Weight": 4.29
+  },
+  {
+    "ItemCode": "ITM-144",
+    "ItemReference": "Sensor V",
+    "Width": 53,
+    "Length": 129,
+    "Depth": 91,
+    "Weight": 0.63
+  },
+  {
+    "ItemCode": "ITM-145",
+    "ItemReference": "Module U",
+    "Width": 658,
+    "Length": 454,
+    "Depth": 409,
+    "Weight": 5.28,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-146",
+    "ItemReference": "Clip P",
+    "Width": 25,
+    "Length": 44,
+    "Depth": 13,
+    "Weight": 0.13,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-147",
+    "ItemReference": "Remote N",
+    "Width": 306,
+    "Length": 159,
+    "Depth": 166,
+    "Weight": 3.62
+  },
+  {
+    "ItemCode": "ITM-148",
+    "ItemReference": "Rod N",
+    "Width": 743,
+    "Length": 616,
+    "Depth": 753,
+    "Weight": 22.37,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-149",
+    "ItemReference": "Lamp D",
+    "Width": 788,
+    "Length": 878,
+    "Depth": 861,
+    "Weight": 39.38,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-150",
+    "ItemReference": "Coupler G",
+    "Width": 1085,
+    "Length": 1034,
+    "Depth": 821,
+    "Weight": 24.73
+  },
+  {
+    "ItemCode": "ITM-151",
+    "ItemReference": "Tube T",
+    "Width": 625,
+    "Length": 1002,
+    "Depth": 570,
+    "Weight": 18.82,
+    "BoxGroup": "GROUP-E"
+  },
+  {
+    "ItemCode": "ITM-152",
+    "ItemReference": "Cable C",
+    "Width": 583,
+    "Length": 406,
+    "Depth": 500,
+    "Weight": 6.38
+  },
+  {
+    "ItemCode": "ITM-153",
+    "ItemReference": "Figurine Y",
+    "Width": 48,
+    "Length": 10,
+    "Depth": 22,
+    "Weight": 0.26,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-154",
+    "ItemReference": "Remote I",
+    "Width": 356,
+    "Length": 638,
+    "Depth": 213,
+    "Weight": 5.45,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-155",
+    "ItemReference": "Latch K",
+    "Width": 26,
+    "Length": 13,
+    "Depth": 13,
+    "Weight": 0.23,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-156",
+    "ItemReference": "Module P",
+    "Width": 96,
+    "Length": 115,
+    "Depth": 95,
+    "Weight": 0.34,
+    "BoxGroup": "GROUP-E"
+  },
+  {
+    "ItemCode": "ITM-157",
+    "ItemReference": "Gizmo X",
+    "Width": 637,
+    "Length": 566,
+    "Depth": 354,
+    "Weight": 9.04
+  },
+  {
+    "ItemCode": "ITM-158",
+    "ItemReference": "Sprocket P",
+    "Width": 518,
+    "Length": 651,
+    "Depth": 255,
+    "Weight": 9.39
+  },
+  {
+    "ItemCode": "ITM-159",
+    "ItemReference": "Module C",
+    "Width": 68,
+    "Length": 58,
+    "Depth": 36,
+    "Weight": 0.56
+  },
+  {
+    "ItemCode": "ITM-160",
+    "ItemReference": "Controller W",
+    "Width": 126,
+    "Length": 117,
+    "Depth": 57,
+    "Weight": 0.79
+  },
+  {
+    "ItemCode": "ITM-161",
+    "ItemReference": "Sensor Z",
+    "Width": 338,
+    "Length": 287,
+    "Depth": 226,
+    "Weight": 4.51
+  },
+  {
+    "ItemCode": "ITM-162",
+    "ItemReference": "Cable N",
+    "Width": 178,
+    "Length": 225,
+    "Depth": 146,
+    "Weight": 4.31,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-163",
+    "ItemReference": "Sensor K",
+    "Width": 135,
+    "Length": 82,
+    "Depth": 67,
+    "Weight": 1.44
+  },
+  {
+    "ItemCode": "ITM-164",
+    "ItemReference": "Kit C",
+    "Width": 15,
+    "Length": 15,
+    "Depth": 32,
+    "Weight": 0.05
+  },
+  {
+    "ItemCode": "ITM-165",
+    "ItemReference": "Connector R",
+    "Width": 45,
+    "Length": 45,
+    "Depth": 26,
+    "Weight": 0.21,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-166",
+    "ItemReference": "Container X",
+    "Width": 28,
+    "Length": 48,
+    "Depth": 24,
+    "Weight": 0.12
+  },
+  {
+    "ItemCode": "ITM-167",
+    "ItemReference": "Cable E",
+    "Width": 177,
+    "Length": 336,
+    "Depth": 87,
+    "Weight": 2.4
+  },
+  {
+    "ItemCode": "ITM-168",
+    "ItemReference": "Adapter Y",
+    "Width": 78,
+    "Length": 104,
+    "Depth": 91,
+    "Weight": 1.47
+  },
+  {
+    "ItemCode": "ITM-169",
+    "ItemReference": "Rod V",
+    "Width": 126,
+    "Length": 275,
+    "Depth": 228,
+    "Weight": 4.32,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-170",
+    "ItemReference": "Coupler W",
+    "Width": 473,
+    "Length": 479,
+    "Depth": 203,
+    "Weight": 6.0,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-171",
+    "ItemReference": "Charger C",
+    "Width": 50,
+    "Length": 11,
+    "Depth": 10,
+    "Weight": 0.23,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-172",
+    "ItemReference": "Tool K",
+    "Width": 89,
+    "Length": 142,
+    "Depth": 61,
+    "Weight": 1.21
+  },
+  {
+    "ItemCode": "ITM-173",
+    "ItemReference": "Bracket B",
+    "Width": 146,
+    "Length": 129,
+    "Depth": 26,
+    "Weight": 1.08,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-174",
+    "ItemReference": "Container P",
+    "Width": 226,
+    "Length": 189,
+    "Depth": 115,
+    "Weight": 4.02,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-175",
+    "ItemReference": "Adapter J",
+    "Width": 271,
+    "Length": 244,
+    "Depth": 194,
+    "Weight": 3.67,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-176",
+    "ItemReference": "Plate B",
+    "Width": 29,
+    "Length": 23,
+    "Depth": 13,
+    "Weight": 0.23,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-177",
+    "ItemReference": "Widget P",
+    "Width": 164,
+    "Length": 153,
+    "Depth": 157,
+    "Weight": 3.13,
+    "BoxGroup": "GROUP-E"
+  },
+  {
+    "ItemCode": "ITM-178",
+    "ItemReference": "Ornament C",
+    "Width": 144,
+    "Length": 55,
+    "Depth": 75,
+    "Weight": 0.22
+  },
+  {
+    "ItemCode": "ITM-179",
+    "ItemReference": "Toy S",
+    "Width": 101,
+    "Length": 140,
+    "Depth": 73,
+    "Weight": 0.58,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-180",
+    "ItemReference": "Panel Z",
+    "Width": 835,
+    "Length": 1025,
+    "Depth": 753,
+    "Weight": 37.75,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-181",
+    "ItemReference": "Valve N",
+    "Width": 254,
+    "Length": 140,
+    "Depth": 161,
+    "Weight": 4.48
+  },
+  {
+    "ItemCode": "ITM-182",
+    "ItemReference": "Housing K",
+    "Width": 339,
+    "Length": 561,
+    "Depth": 258,
+    "Weight": 9.84,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-183",
+    "ItemReference": "Ornament X",
+    "Width": 930,
+    "Length": 1017,
+    "Depth": 475,
+    "Weight": 18.62,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-184",
+    "ItemReference": "Casing T",
+    "Width": 147,
+    "Length": 133,
+    "Depth": 29,
+    "Weight": 0.43
+  },
+  {
+    "ItemCode": "ITM-185",
+    "ItemReference": "Board O",
+    "Width": 689,
+    "Length": 596,
+    "Depth": 429,
+    "Weight": 11.49
+  },
+  {
+    "ItemCode": "ITM-186",
+    "ItemReference": "Tube T",
+    "Width": 130,
+    "Length": 90,
+    "Depth": 39,
+    "Weight": 0.77,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-187",
+    "ItemReference": "Clip Z",
+    "Width": 57,
+    "Length": 95,
+    "Depth": 84,
+    "Weight": 0.3,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-188",
+    "ItemReference": "Sprocket L",
+    "Width": 339,
+    "Length": 630,
+    "Depth": 246,
+    "Weight": 10.77,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-189",
+    "ItemReference": "Latch R",
+    "Width": 978,
+    "Length": 1058,
+    "Depth": 421,
+    "Weight": 24.59
+  },
+  {
+    "ItemCode": "ITM-190",
+    "ItemReference": "Mount K",
+    "Width": 248,
+    "Length": 158,
+    "Depth": 75,
+    "Weight": 2.8
+  },
+  {
+    "ItemCode": "ITM-191",
+    "ItemReference": "Figurine W",
+    "Width": 51,
+    "Length": 21,
+    "Depth": 7,
+    "Weight": 0.09,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-192",
+    "ItemReference": "Battery Q",
+    "Width": 213,
+    "Length": 215,
+    "Depth": 132,
+    "Weight": 2.55
+  },
+  {
+    "ItemCode": "ITM-193",
+    "ItemReference": "Plate B",
+    "Width": 631,
+    "Length": 471,
+    "Depth": 233,
+    "Weight": 7.63
+  },
+  {
+    "ItemCode": "ITM-194",
+    "ItemReference": "Speaker J",
+    "Width": 134,
+    "Length": 127,
+    "Depth": 39,
+    "Weight": 0.63
+  },
+  {
+    "ItemCode": "ITM-195",
+    "ItemReference": "Fixture L",
+    "Width": 133,
+    "Length": 139,
+    "Depth": 70,
+    "Weight": 0.37
+  },
+  {
+    "ItemCode": "ITM-196",
+    "ItemReference": "Bracket J",
+    "Width": 284,
+    "Length": 322,
+    "Depth": 144,
+    "Weight": 4.25
+  },
+  {
+    "ItemCode": "ITM-197",
+    "ItemReference": "Battery C",
+    "Width": 228,
+    "Length": 250,
+    "Depth": 152,
+    "Weight": 1.07,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-198",
+    "ItemReference": "Figurine Y",
+    "Width": 177,
+    "Length": 155,
+    "Depth": 99,
+    "Weight": 1.31
+  },
+  {
+    "ItemCode": "ITM-199",
+    "ItemReference": "Sensor Q",
+    "Width": 678,
+    "Length": 569,
+    "Depth": 219,
+    "Weight": 11.28
+  },
+  {
+    "ItemCode": "ITM-200",
+    "ItemReference": "Rod E",
+    "Width": 159,
+    "Length": 161,
+    "Depth": 106,
+    "Weight": 4.33
+  },
+  {
+    "ItemCode": "ITM-201",
+    "ItemReference": "Panel X",
+    "Width": 102,
+    "Length": 96,
+    "Depth": 50,
+    "Weight": 1.46
+  },
+  {
+    "ItemCode": "ITM-202",
+    "ItemReference": "Case H",
+    "Width": 199,
+    "Length": 327,
+    "Depth": 180,
+    "Weight": 4.62,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-203",
+    "ItemReference": "Hinge O",
+    "Width": 192,
+    "Length": 319,
+    "Depth": 157,
+    "Weight": 3.01,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-204",
+    "ItemReference": "Mount Z",
+    "Width": 343,
+    "Length": 184,
+    "Depth": 73,
+    "Weight": 3.56
+  },
+  {
+    "ItemCode": "ITM-205",
+    "ItemReference": "Controller D",
+    "Width": 252,
+    "Length": 337,
+    "Depth": 91,
+    "Weight": 2.14
+  },
+  {
+    "ItemCode": "ITM-206",
+    "ItemReference": "Coupler O",
+    "Width": 375,
+    "Length": 523,
+    "Depth": 246,
+    "Weight": 14.41,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-207",
+    "ItemReference": "Ornament A",
+    "Width": 100,
+    "Length": 114,
+    "Depth": 67,
+    "Weight": 0.51
+  },
+  {
+    "ItemCode": "ITM-208",
+    "ItemReference": "Lamp H",
+    "Width": 16,
+    "Length": 55,
+    "Depth": 26,
+    "Weight": 0.24,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-209",
+    "ItemReference": "Kit W",
+    "Width": 688,
+    "Length": 661,
+    "Depth": 440,
+    "Weight": 8.93,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-210",
+    "ItemReference": "Gadget I",
+    "Width": 69,
+    "Length": 120,
+    "Depth": 97,
+    "Weight": 0.89,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-211",
+    "ItemReference": "Valve J",
+    "Width": 25,
+    "Length": 36,
+    "Depth": 34,
+    "Weight": 0.04
+  },
+  {
+    "ItemCode": "ITM-212",
+    "ItemReference": "Board T",
+    "Width": 281,
+    "Length": 251,
+    "Depth": 207,
+    "Weight": 1.97,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-213",
+    "ItemReference": "Widget T",
+    "Width": 123,
+    "Length": 103,
+    "Depth": 43,
+    "Weight": 1.06,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-214",
+    "ItemReference": "Module Q",
+    "Width": 321,
+    "Length": 249,
+    "Depth": 201,
+    "Weight": 1.08
+  },
+  {
+    "ItemCode": "ITM-215",
+    "ItemReference": "Gizmo U",
+    "Width": 97,
+    "Length": 82,
+    "Depth": 22,
+    "Weight": 0.66,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-216",
+    "ItemReference": "Tube D",
+    "Width": 676,
+    "Length": 687,
+    "Depth": 370,
+    "Weight": 5.47,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-217",
+    "ItemReference": "Casing Y",
+    "Width": 298,
+    "Length": 242,
+    "Depth": 221,
+    "Weight": 1.73,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-218",
+    "ItemReference": "Tool B",
+    "Width": 55,
+    "Length": 75,
+    "Depth": 25,
+    "Weight": 0.61,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-219",
+    "ItemReference": "Remote P",
+    "Width": 146,
+    "Length": 132,
+    "Depth": 44,
+    "Weight": 0.57
+  },
+  {
+    "ItemCode": "ITM-220",
+    "ItemReference": "Sprocket U",
+    "Width": 65,
+    "Length": 97,
+    "Depth": 75,
+    "Weight": 1.36
+  },
+  {
+    "ItemCode": "ITM-221",
+    "ItemReference": "Speaker K",
+    "Width": 854,
+    "Length": 954,
+    "Depth": 654,
+    "Weight": 22.29
+  },
+  {
+    "ItemCode": "ITM-222",
+    "ItemReference": "Coupler Z",
+    "Width": 37,
+    "Length": 15,
+    "Depth": 32,
+    "Weight": 0.19
+  },
+  {
+    "ItemCode": "ITM-223",
+    "ItemReference": "Remote J",
+    "Width": 60,
+    "Length": 91,
+    "Depth": 57,
+    "Weight": 0.6
+  },
+  {
+    "ItemCode": "ITM-224",
+    "ItemReference": "Container F",
+    "Width": 209,
+    "Length": 234,
+    "Depth": 70,
+    "Weight": 3.91
+  },
+  {
+    "ItemCode": "ITM-225",
+    "ItemReference": "Rod N",
+    "Width": 57,
+    "Length": 59,
+    "Depth": 71,
+    "Weight": 0.67
+  },
+  {
+    "ItemCode": "ITM-226",
+    "ItemReference": "Panel A",
+    "Width": 48,
+    "Length": 53,
+    "Depth": 33,
+    "Weight": 0.03,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-227",
+    "ItemReference": "Lamp L",
+    "Width": 122,
+    "Length": 54,
+    "Depth": 97,
+    "Weight": 0.4,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-228",
+    "ItemReference": "Lamp O",
+    "Width": 593,
+    "Length": 370,
+    "Depth": 471,
+    "Weight": 8.04,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-229",
+    "ItemReference": "Valve D",
+    "Width": 21,
+    "Length": 41,
+    "Depth": 38,
+    "Weight": 0.13
+  },
+  {
+    "ItemCode": "ITM-230",
+    "ItemReference": "Bearing Y",
+    "Width": 107,
+    "Length": 77,
+    "Depth": 98,
+    "Weight": 0.57
+  },
+  {
+    "ItemCode": "ITM-231",
+    "ItemReference": "Board G",
+    "Width": 14,
+    "Length": 38,
+    "Depth": 16,
+    "Weight": 0.27,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-232",
+    "ItemReference": "Toy V",
+    "Width": 58,
+    "Length": 120,
+    "Depth": 89,
+    "Weight": 0.58,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-233",
+    "ItemReference": "Tube F",
+    "Width": 560,
+    "Length": 414,
+    "Depth": 262,
+    "Weight": 14.84
+  },
+  {
+    "ItemCode": "ITM-234",
+    "ItemReference": "Valve Z",
+    "Width": 212,
+    "Length": 261,
+    "Depth": 206,
+    "Weight": 2.48
+  },
+  {
+    "ItemCode": "ITM-235",
+    "ItemReference": "Controller E",
+    "Width": 142,
+    "Length": 136,
+    "Depth": 139,
+    "Weight": 2.59
+  },
+  {
+    "ItemCode": "ITM-236",
+    "ItemReference": "Kit Q",
+    "Width": 102,
+    "Length": 123,
+    "Depth": 29,
+    "Weight": 0.36,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-237",
+    "ItemReference": "Case O",
+    "Width": 208,
+    "Length": 152,
+    "Depth": 201,
+    "Weight": 3.56,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-238",
+    "ItemReference": "Container Q",
+    "Width": 328,
+    "Length": 363,
+    "Depth": 465,
+    "Weight": 5.68,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-239",
+    "ItemReference": "Housing L",
+    "Width": 865,
+    "Length": 1058,
+    "Depth": 545,
+    "Weight": 35.69,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-240",
+    "ItemReference": "Controller I",
+    "Width": 29,
+    "Length": 49,
+    "Depth": 39,
+    "Weight": 0.05
+  },
+  {
+    "ItemCode": "ITM-241",
+    "ItemReference": "Latch S",
+    "Width": 134,
+    "Length": 129,
+    "Depth": 97,
+    "Weight": 0.64
+  },
+  {
+    "ItemCode": "ITM-242",
+    "ItemReference": "Gizmo A",
+    "Width": 51,
+    "Length": 59,
+    "Depth": 21,
+    "Weight": 0.2
+  },
+  {
+    "ItemCode": "ITM-243",
+    "ItemReference": "Bottle T",
+    "Width": 247,
+    "Length": 347,
+    "Depth": 220,
+    "Weight": 3.18
+  },
+  {
+    "ItemCode": "ITM-244",
+    "ItemReference": "Clip P",
+    "Width": 137,
+    "Length": 101,
+    "Depth": 58,
+    "Weight": 0.79
+  },
+  {
+    "ItemCode": "ITM-245",
+    "ItemReference": "Panel O",
+    "Width": 109,
+    "Length": 76,
+    "Depth": 63,
+    "Weight": 0.99,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-246",
+    "ItemReference": "Toy X",
+    "Width": 776,
+    "Length": 1099,
+    "Depth": 604,
+    "Weight": 15.66,
+    "BoxGroup": "GROUP-E"
+  },
+  {
+    "ItemCode": "ITM-247",
+    "ItemReference": "Sensor K",
+    "Width": 65,
+    "Length": 84,
+    "Depth": 77,
+    "Weight": 0.52,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-248",
+    "ItemReference": "Speaker T",
+    "Width": 70,
+    "Length": 91,
+    "Depth": 93,
+    "Weight": 1.14,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-249",
+    "ItemReference": "Board Q",
+    "Width": 345,
+    "Length": 198,
+    "Depth": 187,
+    "Weight": 1.09
+  },
+  {
+    "ItemCode": "ITM-250",
+    "ItemReference": "Chip O",
+    "Width": 710,
+    "Length": 898,
+    "Depth": 580,
+    "Weight": 13.36,
+    "BoxGroup": "GROUP-E"
+  },
+  {
+    "ItemCode": "ITM-251",
+    "ItemReference": "Kit J",
+    "Width": 336,
+    "Length": 147,
+    "Depth": 170,
+    "Weight": 1.54,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-252",
+    "ItemReference": "Charger L",
+    "Width": 13,
+    "Length": 46,
+    "Depth": 40,
+    "Weight": 0.07
+  },
+  {
+    "ItemCode": "ITM-253",
+    "ItemReference": "Module M",
+    "Width": 315,
+    "Length": 260,
+    "Depth": 131,
+    "Weight": 4.3
+  },
+  {
+    "ItemCode": "ITM-254",
+    "ItemReference": "Rod D",
+    "Width": 16,
+    "Length": 35,
+    "Depth": 28,
+    "Weight": 0.24,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-255",
+    "ItemReference": "Fixture G",
+    "Width": 222,
+    "Length": 248,
+    "Depth": 70,
+    "Weight": 1.18,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-256",
+    "ItemReference": "Kit Q",
+    "Width": 275,
+    "Length": 348,
+    "Depth": 191,
+    "Weight": 1.56
+  },
+  {
+    "ItemCode": "ITM-257",
+    "ItemReference": "Toy F",
+    "Width": 128,
+    "Length": 144,
+    "Depth": 58,
+    "Weight": 0.97,
+    "BoxGroup": "GROUP-E"
+  },
+  {
+    "ItemCode": "ITM-258",
+    "ItemReference": "Remote P",
+    "Width": 196,
+    "Length": 241,
+    "Depth": 64,
+    "Weight": 2.47
+  },
+  {
+    "ItemCode": "ITM-259",
+    "ItemReference": "Bottle S",
+    "Width": 142,
+    "Length": 138,
+    "Depth": 100,
+    "Weight": 0.23,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-260",
+    "ItemReference": "Latch S",
+    "Width": 56,
+    "Length": 124,
+    "Depth": 81,
+    "Weight": 0.42
+  },
+  {
+    "ItemCode": "ITM-261",
+    "ItemReference": "Rod Y",
+    "Width": 375,
+    "Length": 648,
+    "Depth": 324,
+    "Weight": 4.35
+  },
+  {
+    "ItemCode": "ITM-262",
+    "ItemReference": "Adapter G",
+    "Width": 30,
+    "Length": 36,
+    "Depth": 14,
+    "Weight": 0.14,
+    "BoxGroup": "GROUP-E"
+  },
+  {
+    "ItemCode": "ITM-263",
+    "ItemReference": "Rod P",
+    "Width": 676,
+    "Length": 672,
+    "Depth": 231,
+    "Weight": 11.76,
+    "BoxGroup": "GROUP-E"
+  },
+  {
+    "ItemCode": "ITM-264",
+    "ItemReference": "Toy V",
+    "Width": 216,
+    "Length": 200,
+    "Depth": 104,
+    "Weight": 2.84,
+    "BoxGroup": "GROUP-E"
+  },
+  {
+    "ItemCode": "ITM-265",
+    "ItemReference": "Ornament V",
+    "Width": 669,
+    "Length": 648,
+    "Depth": 335,
+    "Weight": 10.71,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-266",
+    "ItemReference": "Coupler R",
+    "Width": 88,
+    "Length": 148,
+    "Depth": 56,
+    "Weight": 1.12
+  },
+  {
+    "ItemCode": "ITM-267",
+    "ItemReference": "Board K",
+    "Width": 263,
+    "Length": 323,
+    "Depth": 244,
+    "Weight": 2.09,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-268",
+    "ItemReference": "Remote M",
+    "Width": 502,
+    "Length": 476,
+    "Depth": 274,
+    "Weight": 7.19,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-269",
+    "ItemReference": "Bracket L",
+    "Width": 635,
+    "Length": 431,
+    "Depth": 445,
+    "Weight": 6.35
+  },
+  {
+    "ItemCode": "ITM-270",
+    "ItemReference": "Coupler R",
+    "Width": 155,
+    "Length": 147,
+    "Depth": 217,
+    "Weight": 3.96,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-271",
+    "ItemReference": "Battery H",
+    "Width": 133,
+    "Length": 145,
+    "Depth": 165,
+    "Weight": 2.32,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-272",
+    "ItemReference": "Connector A",
+    "Width": 1100,
+    "Length": 1075,
+    "Depth": 480,
+    "Weight": 23.39
+  },
+  {
+    "ItemCode": "ITM-273",
+    "ItemReference": "Kit P",
+    "Width": 313,
+    "Length": 193,
+    "Depth": 142,
+    "Weight": 2.14,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-274",
+    "ItemReference": "Hinge H",
+    "Width": 305,
+    "Length": 337,
+    "Depth": 69,
+    "Weight": 4.65,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-275",
+    "ItemReference": "Gizmo M",
+    "Width": 395,
+    "Length": 683,
+    "Depth": 348,
+    "Weight": 13.64,
+    "BoxGroup": "GROUP-E"
+  },
+  {
+    "ItemCode": "ITM-276",
+    "ItemReference": "Plate D",
+    "Width": 471,
+    "Length": 445,
+    "Depth": 432,
+    "Weight": 14.88,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-277",
+    "ItemReference": "Connector Q",
+    "Width": 169,
+    "Length": 327,
+    "Depth": 88,
+    "Weight": 2.32
+  },
+  {
+    "ItemCode": "ITM-278",
+    "ItemReference": "Bearing W",
+    "Width": 144,
+    "Length": 93,
+    "Depth": 57,
+    "Weight": 0.94
+  },
+  {
+    "ItemCode": "ITM-279",
+    "ItemReference": "Casing T",
+    "Width": 507,
+    "Length": 518,
+    "Depth": 463,
+    "Weight": 7.61,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-280",
+    "ItemReference": "Casing E",
+    "Width": 183,
+    "Length": 121,
+    "Depth": 126,
+    "Weight": 2.53,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-281",
+    "ItemReference": "Figurine J",
+    "Width": 266,
+    "Length": 122,
+    "Depth": 126,
+    "Weight": 3.61
+  },
+  {
+    "ItemCode": "ITM-282",
+    "ItemReference": "Sprocket V",
+    "Width": 29,
+    "Length": 20,
+    "Depth": 30,
+    "Weight": 0.21
+  },
+  {
+    "ItemCode": "ITM-283",
+    "ItemReference": "Clip W",
+    "Width": 28,
+    "Length": 33,
+    "Depth": 19,
+    "Weight": 0.08,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-284",
+    "ItemReference": "Tool X",
+    "Width": 791,
+    "Length": 812,
+    "Depth": 759,
+    "Weight": 27.38,
+    "BoxGroup": "GROUP-E"
+  },
+  {
+    "ItemCode": "ITM-285",
+    "ItemReference": "Cable Y",
+    "Width": 146,
+    "Length": 126,
+    "Depth": 30,
+    "Weight": 0.88,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-286",
+    "ItemReference": "Module S",
+    "Width": 45,
+    "Length": 42,
+    "Depth": 17,
+    "Weight": 0.18,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-287",
+    "ItemReference": "Battery O",
+    "Width": 23,
+    "Length": 55,
+    "Depth": 36,
+    "Weight": 0.05,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-288",
+    "ItemReference": "Tool E",
+    "Width": 236,
+    "Length": 264,
+    "Depth": 74,
+    "Weight": 3.24
+  },
+  {
+    "ItemCode": "ITM-289",
+    "ItemReference": "Clip X",
+    "Width": 26,
+    "Length": 10,
+    "Depth": 18,
+    "Weight": 0.18,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-290",
+    "ItemReference": "Module R",
+    "Width": 1078,
+    "Length": 1057,
+    "Depth": 435,
+    "Weight": 39.61,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-291",
+    "ItemReference": "Bottle F",
+    "Width": 692,
+    "Length": 628,
+    "Depth": 415,
+    "Weight": 8.12
+  },
+  {
+    "ItemCode": "ITM-292",
+    "ItemReference": "Case M",
+    "Width": 137,
+    "Length": 134,
+    "Depth": 89,
+    "Weight": 0.37
+  },
+  {
+    "ItemCode": "ITM-293",
+    "ItemReference": "Adapter F",
+    "Width": 801,
+    "Length": 870,
+    "Depth": 465,
+    "Weight": 32.38,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-294",
+    "ItemReference": "Gadget J",
+    "Width": 304,
+    "Length": 259,
+    "Depth": 168,
+    "Weight": 3.13
+  },
+  {
+    "ItemCode": "ITM-295",
+    "ItemReference": "Valve O",
+    "Width": 85,
+    "Length": 74,
+    "Depth": 34,
+    "Weight": 0.24
+  },
+  {
+    "ItemCode": "ITM-296",
+    "ItemReference": "Rod Y",
+    "Width": 1055,
+    "Length": 608,
+    "Depth": 523,
+    "Weight": 17.77,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-297",
+    "ItemReference": "Case T",
+    "Width": 343,
+    "Length": 132,
+    "Depth": 122,
+    "Weight": 3.96,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-298",
+    "ItemReference": "Remote G",
+    "Width": 697,
+    "Length": 328,
+    "Depth": 271,
+    "Weight": 9.54,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-299",
+    "ItemReference": "Hinge K",
+    "Width": 317,
+    "Length": 292,
+    "Depth": 142,
+    "Weight": 1.95
+  },
+  {
+    "ItemCode": "ITM-300",
+    "ItemReference": "Battery H",
+    "Width": 85,
+    "Length": 57,
+    "Depth": 91,
+    "Weight": 1.43
+  },
+  {
+    "ItemCode": "ITM-301",
+    "ItemReference": "Casing U",
+    "Width": 262,
+    "Length": 246,
+    "Depth": 72,
+    "Weight": 4.89
+  },
+  {
+    "ItemCode": "ITM-302",
+    "ItemReference": "Speaker Z",
+    "Width": 298,
+    "Length": 226,
+    "Depth": 164,
+    "Weight": 1.6,
+    "BoxGroup": "GROUP-E"
+  },
+  {
+    "ItemCode": "ITM-303",
+    "ItemReference": "Kit H",
+    "Width": 453,
+    "Length": 662,
+    "Depth": 273,
+    "Weight": 12.86
+  },
+  {
+    "ItemCode": "ITM-304",
+    "ItemReference": "Controller N",
+    "Width": 885,
+    "Length": 871,
+    "Depth": 468,
+    "Weight": 22.88,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-305",
+    "ItemReference": "Bracket O",
+    "Width": 347,
+    "Length": 574,
+    "Depth": 297,
+    "Weight": 4.57,
+    "BoxGroup": "GROUP-E"
+  },
+  {
+    "ItemCode": "ITM-306",
+    "ItemReference": "Plate B",
+    "Width": 396,
+    "Length": 689,
+    "Depth": 500,
+    "Weight": 11.97
+  },
+  {
+    "ItemCode": "ITM-307",
+    "ItemReference": "Kit G",
+    "Width": 470,
+    "Length": 455,
+    "Depth": 207,
+    "Weight": 6.33,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-308",
+    "ItemReference": "Adapter X",
+    "Width": 845,
+    "Length": 1068,
+    "Depth": 524,
+    "Weight": 31.48
+  },
+  {
+    "ItemCode": "ITM-309",
+    "ItemReference": "Charger H",
+    "Width": 318,
+    "Length": 192,
+    "Depth": 157,
+    "Weight": 2.87
+  },
+  {
+    "ItemCode": "ITM-310",
+    "ItemReference": "Clip I",
+    "Width": 113,
+    "Length": 109,
+    "Depth": 32,
+    "Weight": 1.24
+  },
+  {
+    "ItemCode": "ITM-311",
+    "ItemReference": "Toy G",
+    "Width": 102,
+    "Length": 55,
+    "Depth": 92,
+    "Weight": 1.32
+  },
+  {
+    "ItemCode": "ITM-312",
+    "ItemReference": "Gadget I",
+    "Width": 269,
+    "Length": 268,
+    "Depth": 244,
+    "Weight": 2.67,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-313",
+    "ItemReference": "Housing M",
+    "Width": 182,
+    "Length": 247,
+    "Depth": 200,
+    "Weight": 3.62
+  },
+  {
+    "ItemCode": "ITM-314",
+    "ItemReference": "Bearing Y",
+    "Width": 670,
+    "Length": 628,
+    "Depth": 451,
+    "Weight": 9.07
+  },
+  {
+    "ItemCode": "ITM-315",
+    "ItemReference": "Ornament F",
+    "Width": 44,
+    "Length": 41,
+    "Depth": 16,
+    "Weight": 0.28,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-316",
+    "ItemReference": "Sprocket Q",
+    "Width": 14,
+    "Length": 52,
+    "Depth": 8,
+    "Weight": 0.23,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-317",
+    "ItemReference": "Housing C",
+    "Width": 122,
+    "Length": 175,
+    "Depth": 189,
+    "Weight": 2.82,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-318",
+    "ItemReference": "Rod P",
+    "Width": 124,
+    "Length": 121,
+    "Depth": 196,
+    "Weight": 3.21,
+    "BoxGroup": "GROUP-E"
+  },
+  {
+    "ItemCode": "ITM-319",
+    "ItemReference": "Coupler R",
+    "Width": 608,
+    "Length": 857,
+    "Depth": 816,
+    "Weight": 31.54,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-320",
+    "ItemReference": "Sensor D",
+    "Width": 181,
+    "Length": 169,
+    "Depth": 218,
+    "Weight": 3.11
+  },
+  {
+    "ItemCode": "ITM-321",
+    "ItemReference": "Coupler Z",
+    "Width": 97,
+    "Length": 101,
+    "Depth": 78,
+    "Weight": 0.93
+  },
+  {
+    "ItemCode": "ITM-322",
+    "ItemReference": "Housing J",
+    "Width": 337,
+    "Length": 140,
+    "Depth": 227,
+    "Weight": 4.97
+  },
+  {
+    "ItemCode": "ITM-323",
+    "ItemReference": "Gizmo C",
+    "Width": 98,
+    "Length": 120,
+    "Depth": 80,
+    "Weight": 0.27,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-324",
+    "ItemReference": "Bracket P",
+    "Width": 630,
+    "Length": 469,
+    "Depth": 489,
+    "Weight": 14.75
+  },
+  {
+    "ItemCode": "ITM-325",
+    "ItemReference": "Battery B",
+    "Width": 138,
+    "Length": 122,
+    "Depth": 80,
+    "Weight": 0.55
+  },
+  {
+    "ItemCode": "ITM-326",
+    "ItemReference": "Coupler R",
+    "Width": 128,
+    "Length": 165,
+    "Depth": 140,
+    "Weight": 1.06,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-327",
+    "ItemReference": "Charger C",
+    "Width": 122,
+    "Length": 80,
+    "Depth": 92,
+    "Weight": 1.29,
+    "BoxGroup": "GROUP-E"
+  },
+  {
+    "ItemCode": "ITM-328",
+    "ItemReference": "Figurine M",
+    "Width": 371,
+    "Length": 652,
+    "Depth": 240,
+    "Weight": 9.51
+  },
+  {
+    "ItemCode": "ITM-329",
+    "ItemReference": "Sprocket D",
+    "Width": 59,
+    "Length": 93,
+    "Depth": 97,
+    "Weight": 1.2
+  },
+  {
+    "ItemCode": "ITM-330",
+    "ItemReference": "Charger Y",
+    "Width": 131,
+    "Length": 84,
+    "Depth": 77,
+    "Weight": 0.84,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-331",
+    "ItemReference": "Container F",
+    "Width": 289,
+    "Length": 217,
+    "Depth": 81,
+    "Weight": 4.09,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-332",
+    "ItemReference": "Module C",
+    "Width": 98,
+    "Length": 141,
+    "Depth": 39,
+    "Weight": 1.16,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-333",
+    "ItemReference": "Bracket A",
+    "Width": 827,
+    "Length": 784,
+    "Depth": 789,
+    "Weight": 19.55,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-334",
+    "ItemReference": "Container O",
+    "Width": 251,
+    "Length": 224,
+    "Depth": 86,
+    "Weight": 1.11,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-335",
+    "ItemReference": "Plate T",
+    "Width": 497,
+    "Length": 306,
+    "Depth": 349,
+    "Weight": 8.55
+  },
+  {
+    "ItemCode": "ITM-336",
+    "ItemReference": "Controller H",
+    "Width": 163,
+    "Length": 295,
+    "Depth": 157,
+    "Weight": 1.68,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-337",
+    "ItemReference": "Board E",
+    "Width": 37,
+    "Length": 27,
+    "Depth": 31,
+    "Weight": 0.1
+  },
+  {
+    "ItemCode": "ITM-338",
+    "ItemReference": "Lamp I",
+    "Width": 969,
+    "Length": 920,
+    "Depth": 653,
+    "Weight": 28.63,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-339",
+    "ItemReference": "Connector J",
+    "Width": 35,
+    "Length": 31,
+    "Depth": 29,
+    "Weight": 0.25,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-340",
+    "ItemReference": "Container U",
+    "Width": 669,
+    "Length": 753,
+    "Depth": 564,
+    "Weight": 28.89
+  },
+  {
+    "ItemCode": "ITM-341",
+    "ItemReference": "Kit K",
+    "Width": 100,
+    "Length": 90,
+    "Depth": 57,
+    "Weight": 1.16
+  },
+  {
+    "ItemCode": "ITM-342",
+    "ItemReference": "Hinge Z",
+    "Width": 98,
+    "Length": 85,
+    "Depth": 70,
+    "Weight": 0.67
+  },
+  {
+    "ItemCode": "ITM-343",
+    "ItemReference": "Mount S",
+    "Width": 692,
+    "Length": 949,
+    "Depth": 793,
+    "Weight": 27.4
+  },
+  {
+    "ItemCode": "ITM-344",
+    "ItemReference": "Tool W",
+    "Width": 87,
+    "Length": 138,
+    "Depth": 28,
+    "Weight": 1.26
+  },
+  {
+    "ItemCode": "ITM-345",
+    "ItemReference": "Bottle V",
+    "Width": 282,
+    "Length": 197,
+    "Depth": 121,
+    "Weight": 2.01,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-346",
+    "ItemReference": "Speaker C",
+    "Width": 126,
+    "Length": 111,
+    "Depth": 94,
+    "Weight": 0.72,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-347",
+    "ItemReference": "Bottle R",
+    "Width": 33,
+    "Length": 54,
+    "Depth": 39,
+    "Weight": 0.19
+  },
+  {
+    "ItemCode": "ITM-348",
+    "ItemReference": "Sensor Y",
+    "Width": 135,
+    "Length": 95,
+    "Depth": 41,
+    "Weight": 1.04,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-349",
+    "ItemReference": "Charger Y",
+    "Width": 105,
+    "Length": 63,
+    "Depth": 21,
+    "Weight": 0.33,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-350",
+    "ItemReference": "Battery R",
+    "Width": 267,
+    "Length": 176,
+    "Depth": 174,
+    "Weight": 2.5,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-351",
+    "ItemReference": "Latch W",
+    "Width": 208,
+    "Length": 126,
+    "Depth": 183,
+    "Weight": 1.42,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-352",
+    "ItemReference": "Adapter X",
+    "Width": 29,
+    "Length": 31,
+    "Depth": 34,
+    "Weight": 0.24,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-353",
+    "ItemReference": "Kit D",
+    "Width": 139,
+    "Length": 107,
+    "Depth": 60,
+    "Weight": 0.29,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-354",
+    "ItemReference": "Adapter A",
+    "Width": 631,
+    "Length": 355,
+    "Depth": 284,
+    "Weight": 14.23
+  },
+  {
+    "ItemCode": "ITM-355",
+    "ItemReference": "Battery F",
+    "Width": 204,
+    "Length": 263,
+    "Depth": 169,
+    "Weight": 4.83,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-356",
+    "ItemReference": "Tube F",
+    "Width": 134,
+    "Length": 105,
+    "Depth": 70,
+    "Weight": 0.24
+  },
+  {
+    "ItemCode": "ITM-357",
+    "ItemReference": "Mount O",
+    "Width": 219,
+    "Length": 121,
+    "Depth": 240,
+    "Weight": 1.86,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-358",
+    "ItemReference": "Module S",
+    "Width": 44,
+    "Length": 21,
+    "Depth": 28,
+    "Weight": 0.11,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-359",
+    "ItemReference": "Board Q",
+    "Width": 760,
+    "Length": 905,
+    "Depth": 598,
+    "Weight": 29.12
+  },
+  {
+    "ItemCode": "ITM-360",
+    "ItemReference": "Ornament L",
+    "Width": 616,
+    "Length": 388,
+    "Depth": 352,
+    "Weight": 14.11
+  },
+  {
+    "ItemCode": "ITM-361",
+    "ItemReference": "Connector K",
+    "Width": 29,
+    "Length": 17,
+    "Depth": 16,
+    "Weight": 0.12,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-362",
+    "ItemReference": "Bottle T",
+    "Width": 34,
+    "Length": 37,
+    "Depth": 16,
+    "Weight": 0.16,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-363",
+    "ItemReference": "Casing R",
+    "Width": 86,
+    "Length": 67,
+    "Depth": 43,
+    "Weight": 0.61,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-364",
+    "ItemReference": "Ornament A",
+    "Width": 169,
+    "Length": 328,
+    "Depth": 158,
+    "Weight": 4.86,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-365",
+    "ItemReference": "Bottle V",
+    "Width": 301,
+    "Length": 335,
+    "Depth": 173,
+    "Weight": 2.95,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-366",
+    "ItemReference": "Housing J",
+    "Width": 24,
+    "Length": 44,
+    "Depth": 23,
+    "Weight": 0.07,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-367",
+    "ItemReference": "Board R",
+    "Width": 266,
+    "Length": 149,
+    "Depth": 128,
+    "Weight": 4.1
+  },
+  {
+    "ItemCode": "ITM-368",
+    "ItemReference": "Lamp R",
+    "Width": 321,
+    "Length": 689,
+    "Depth": 425,
+    "Weight": 10.01
+  },
+  {
+    "ItemCode": "ITM-369",
+    "ItemReference": "Sensor X",
+    "Width": 684,
+    "Length": 426,
+    "Depth": 352,
+    "Weight": 13.62,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-370",
+    "ItemReference": "Ornament C",
+    "Width": 65,
+    "Length": 149,
+    "Depth": 50,
+    "Weight": 0.47
+  },
+  {
+    "ItemCode": "ITM-371",
+    "ItemReference": "Ornament W",
+    "Width": 229,
+    "Length": 162,
+    "Depth": 217,
+    "Weight": 1.56,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-372",
+    "ItemReference": "Sprocket S",
+    "Width": 85,
+    "Length": 126,
+    "Depth": 88,
+    "Weight": 0.42
+  },
+  {
+    "ItemCode": "ITM-373",
+    "ItemReference": "Frame J",
+    "Width": 339,
+    "Length": 251,
+    "Depth": 233,
+    "Weight": 4.26,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-374",
+    "ItemReference": "Sprocket I",
+    "Width": 364,
+    "Length": 659,
+    "Depth": 267,
+    "Weight": 6.75
+  },
+  {
+    "ItemCode": "ITM-375",
+    "ItemReference": "Valve Y",
+    "Width": 501,
+    "Length": 550,
+    "Depth": 272,
+    "Weight": 10.35,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-376",
+    "ItemReference": "Speaker O",
+    "Width": 60,
+    "Length": 59,
+    "Depth": 10,
+    "Weight": 0.13
+  },
+  {
+    "ItemCode": "ITM-377",
+    "ItemReference": "Lamp O",
+    "Width": 767,
+    "Length": 897,
+    "Depth": 401,
+    "Weight": 36.33
+  },
+  {
+    "ItemCode": "ITM-378",
+    "ItemReference": "Bracket X",
+    "Width": 925,
+    "Length": 940,
+    "Depth": 757,
+    "Weight": 22.03,
+    "BoxGroup": "GROUP-E"
+  },
+  {
+    "ItemCode": "ITM-379",
+    "ItemReference": "Charger G",
+    "Width": 1022,
+    "Length": 708,
+    "Depth": 653,
+    "Weight": 19.52
+  },
+  {
+    "ItemCode": "ITM-380",
+    "ItemReference": "Figurine R",
+    "Width": 264,
+    "Length": 338,
+    "Depth": 184,
+    "Weight": 4.15
+  },
+  {
+    "ItemCode": "ITM-381",
+    "ItemReference": "Sprocket B",
+    "Width": 60,
+    "Length": 39,
+    "Depth": 6,
+    "Weight": 0.05
+  },
+  {
+    "ItemCode": "ITM-382",
+    "ItemReference": "Case O",
+    "Width": 37,
+    "Length": 22,
+    "Depth": 13,
+    "Weight": 0.27,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-383",
+    "ItemReference": "Bracket U",
+    "Width": 60,
+    "Length": 97,
+    "Depth": 41,
+    "Weight": 0.27
+  },
+  {
+    "ItemCode": "ITM-384",
+    "ItemReference": "Housing N",
+    "Width": 300,
+    "Length": 144,
+    "Depth": 60,
+    "Weight": 1.85,
+    "BoxGroup": "GROUP-E"
+  },
+  {
+    "ItemCode": "ITM-385",
+    "ItemReference": "Housing Q",
+    "Width": 122,
+    "Length": 122,
+    "Depth": 238,
+    "Weight": 2.37,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-386",
+    "ItemReference": "Connector P",
+    "Width": 34,
+    "Length": 15,
+    "Depth": 11,
+    "Weight": 0.05,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-387",
+    "ItemReference": "Connector M",
+    "Width": 685,
+    "Length": 368,
+    "Depth": 273,
+    "Weight": 4.75
+  },
+  {
+    "ItemCode": "ITM-388",
+    "ItemReference": "Rod U",
+    "Width": 94,
+    "Length": 142,
+    "Depth": 47,
+    "Weight": 1.02,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-389",
+    "ItemReference": "Rod V",
+    "Width": 77,
+    "Length": 61,
+    "Depth": 32,
+    "Weight": 0.38,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-390",
+    "ItemReference": "Speaker L",
+    "Width": 761,
+    "Length": 1005,
+    "Depth": 471,
+    "Weight": 18.94
+  },
+  {
+    "ItemCode": "ITM-391",
+    "ItemReference": "Valve R",
+    "Width": 304,
+    "Length": 275,
+    "Depth": 132,
+    "Weight": 4.12
+  },
+  {
+    "ItemCode": "ITM-392",
+    "ItemReference": "Clip G",
+    "Width": 250,
+    "Length": 168,
+    "Depth": 160,
+    "Weight": 2.18,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-393",
+    "ItemReference": "Board M",
+    "Width": 41,
+    "Length": 50,
+    "Depth": 9,
+    "Weight": 0.17
+  },
+  {
+    "ItemCode": "ITM-394",
+    "ItemReference": "Lamp K",
+    "Width": 46,
+    "Length": 36,
+    "Depth": 28,
+    "Weight": 0.17,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-395",
+    "ItemReference": "Module A",
+    "Width": 123,
+    "Length": 187,
+    "Depth": 115,
+    "Weight": 1.16,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-396",
+    "ItemReference": "Chip J",
+    "Width": 248,
+    "Length": 316,
+    "Depth": 166,
+    "Weight": 2.69,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-397",
+    "ItemReference": "Remote R",
+    "Width": 191,
+    "Length": 141,
+    "Depth": 139,
+    "Weight": 1.32
+  },
+  {
+    "ItemCode": "ITM-398",
+    "ItemReference": "Fixture R",
+    "Width": 125,
+    "Length": 131,
+    "Depth": 28,
+    "Weight": 0.6,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-399",
+    "ItemReference": "Sprocket H",
+    "Width": 37,
+    "Length": 17,
+    "Depth": 34,
+    "Weight": 0.19,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-400",
+    "ItemReference": "Casing D",
+    "Width": 18,
+    "Length": 54,
+    "Depth": 5,
+    "Weight": 0.07
+  },
+  {
+    "ItemCode": "ITM-401",
+    "ItemReference": "Battery Q",
+    "Width": 669,
+    "Length": 432,
+    "Depth": 285,
+    "Weight": 8.09
+  },
+  {
+    "ItemCode": "ITM-402",
+    "ItemReference": "Coupler X",
+    "Width": 694,
+    "Length": 315,
+    "Depth": 371,
+    "Weight": 12.88,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-403",
+    "ItemReference": "Bearing W",
+    "Width": 921,
+    "Length": 639,
+    "Depth": 654,
+    "Weight": 24.75,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-404",
+    "ItemReference": "Hinge F",
+    "Width": 82,
+    "Length": 148,
+    "Depth": 33,
+    "Weight": 1.36
+  },
+  {
+    "ItemCode": "ITM-405",
+    "ItemReference": "Adapter H",
+    "Width": 120,
+    "Length": 131,
+    "Depth": 63,
+    "Weight": 1.98,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-406",
+    "ItemReference": "Fixture F",
+    "Width": 1039,
+    "Length": 618,
+    "Depth": 683,
+    "Weight": 34.49
+  },
+  {
+    "ItemCode": "ITM-407",
+    "ItemReference": "Bottle H",
+    "Width": 103,
+    "Length": 142,
+    "Depth": 60,
+    "Weight": 0.55,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-408",
+    "ItemReference": "Adapter Q",
+    "Width": 133,
+    "Length": 165,
+    "Depth": 117,
+    "Weight": 4.22
+  },
+  {
+    "ItemCode": "ITM-409",
+    "ItemReference": "Charger C",
+    "Width": 444,
+    "Length": 696,
+    "Depth": 359,
+    "Weight": 7.6
+  },
+  {
+    "ItemCode": "ITM-410",
+    "ItemReference": "Widget L",
+    "Width": 122,
+    "Length": 150,
+    "Depth": 58,
+    "Weight": 1.16,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-411",
+    "ItemReference": "Latch P",
+    "Width": 997,
+    "Length": 700,
+    "Depth": 775,
+    "Weight": 37.21
+  },
+  {
+    "ItemCode": "ITM-412",
+    "ItemReference": "Valve E",
+    "Width": 36,
+    "Length": 11,
+    "Depth": 19,
+    "Weight": 0.17
+  },
+  {
+    "ItemCode": "ITM-413",
+    "ItemReference": "Widget K",
+    "Width": 52,
+    "Length": 34,
+    "Depth": 24,
+    "Weight": 0.05,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-414",
+    "ItemReference": "Bottle P",
+    "Width": 1097,
+    "Length": 672,
+    "Depth": 764,
+    "Weight": 19.84,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-415",
+    "ItemReference": "Battery N",
+    "Width": 215,
+    "Length": 237,
+    "Depth": 81,
+    "Weight": 3.32,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-416",
+    "ItemReference": "Charger C",
+    "Width": 135,
+    "Length": 231,
+    "Depth": 229,
+    "Weight": 4.86,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-417",
+    "ItemReference": "Toy Z",
+    "Width": 144,
+    "Length": 91,
+    "Depth": 60,
+    "Weight": 0.79,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-418",
+    "ItemReference": "Connector Y",
+    "Width": 355,
+    "Length": 379,
+    "Depth": 254,
+    "Weight": 5.81,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-419",
+    "ItemReference": "Adapter R",
+    "Width": 148,
+    "Length": 76,
+    "Depth": 77,
+    "Weight": 0.6,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-420",
+    "ItemReference": "Bracket F",
+    "Width": 455,
+    "Length": 660,
+    "Depth": 220,
+    "Weight": 6.37
+  },
+  {
+    "ItemCode": "ITM-421",
+    "ItemReference": "Fixture C",
+    "Width": 211,
+    "Length": 221,
+    "Depth": 191,
+    "Weight": 1.2,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-422",
+    "ItemReference": "Gadget M",
+    "Width": 584,
+    "Length": 683,
+    "Depth": 481,
+    "Weight": 6.75,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-423",
+    "ItemReference": "Adapter A",
+    "Width": 59,
+    "Length": 24,
+    "Depth": 13,
+    "Weight": 0.08,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-424",
+    "ItemReference": "Tube U",
+    "Width": 47,
+    "Length": 26,
+    "Depth": 9,
+    "Weight": 0.03,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-425",
+    "ItemReference": "Case Z",
+    "Width": 31,
+    "Length": 17,
+    "Depth": 7,
+    "Weight": 0.28,
+    "BoxGroup": "GROUP-E"
+  },
+  {
+    "ItemCode": "ITM-426",
+    "ItemReference": "Container X",
+    "Width": 53,
+    "Length": 98,
+    "Depth": 74,
+    "Weight": 0.42,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-427",
+    "ItemReference": "Coupler I",
+    "Width": 69,
+    "Length": 54,
+    "Depth": 98,
+    "Weight": 1.0,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-428",
+    "ItemReference": "Board N",
+    "Width": 545,
+    "Length": 331,
+    "Depth": 244,
+    "Weight": 7.08,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-429",
+    "ItemReference": "Battery H",
+    "Width": 325,
+    "Length": 259,
+    "Depth": 64,
+    "Weight": 4.96
+  },
+  {
+    "ItemCode": "ITM-430",
+    "ItemReference": "Ornament P",
+    "Width": 244,
+    "Length": 208,
+    "Depth": 204,
+    "Weight": 3.01,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-431",
+    "ItemReference": "Gadget K",
+    "Width": 127,
+    "Length": 349,
+    "Depth": 131,
+    "Weight": 1.23
+  },
+  {
+    "ItemCode": "ITM-432",
+    "ItemReference": "Battery L",
+    "Width": 419,
+    "Length": 381,
+    "Depth": 251,
+    "Weight": 6.73,
+    "BoxGroup": "GROUP-E"
+  },
+  {
+    "ItemCode": "ITM-433",
+    "ItemReference": "Sprocket Y",
+    "Width": 712,
+    "Length": 894,
+    "Depth": 833,
+    "Weight": 39.51,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-434",
+    "ItemReference": "Casing H",
+    "Width": 326,
+    "Length": 308,
+    "Depth": 238,
+    "Weight": 2.44
+  },
+  {
+    "ItemCode": "ITM-435",
+    "ItemReference": "Ornament S",
+    "Width": 264,
+    "Length": 168,
+    "Depth": 186,
+    "Weight": 3.17,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-436",
+    "ItemReference": "Bracket B",
+    "Width": 78,
+    "Length": 52,
+    "Depth": 87,
+    "Weight": 0.82,
+    "BoxGroup": "GROUP-E"
+  },
+  {
+    "ItemCode": "ITM-437",
+    "ItemReference": "Mount Z",
+    "Width": 55,
+    "Length": 21,
+    "Depth": 25,
+    "Weight": 0.04,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-438",
+    "ItemReference": "Fixture Y",
+    "Width": 43,
+    "Length": 33,
+    "Depth": 9,
+    "Weight": 0.12
+  },
+  {
+    "ItemCode": "ITM-439",
+    "ItemReference": "Charger S",
+    "Width": 29,
+    "Length": 30,
+    "Depth": 13,
+    "Weight": 0.29
+  },
+  {
+    "ItemCode": "ITM-440",
+    "ItemReference": "Container Z",
+    "Width": 244,
+    "Length": 286,
+    "Depth": 141,
+    "Weight": 1.7
+  },
+  {
+    "ItemCode": "ITM-441",
+    "ItemReference": "Rod Z",
+    "Width": 135,
+    "Length": 125,
+    "Depth": 42,
+    "Weight": 0.69
+  },
+  {
+    "ItemCode": "ITM-442",
+    "ItemReference": "Frame E",
+    "Width": 50,
+    "Length": 139,
+    "Depth": 93,
+    "Weight": 0.71
+  },
+  {
+    "ItemCode": "ITM-443",
+    "ItemReference": "Hinge B",
+    "Width": 90,
+    "Length": 128,
+    "Depth": 48,
+    "Weight": 1.03,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-444",
+    "ItemReference": "Fixture K",
+    "Width": 180,
+    "Length": 208,
+    "Depth": 141,
+    "Weight": 1.67
+  },
+  {
+    "ItemCode": "ITM-445",
+    "ItemReference": "Bracket W",
+    "Width": 306,
+    "Length": 346,
+    "Depth": 145,
+    "Weight": 2.79,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-446",
+    "ItemReference": "Module L",
+    "Width": 63,
+    "Length": 142,
+    "Depth": 20,
+    "Weight": 0.26,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-447",
+    "ItemReference": "Panel N",
+    "Width": 216,
+    "Length": 209,
+    "Depth": 199,
+    "Weight": 2.5
+  },
+  {
+    "ItemCode": "ITM-448",
+    "ItemReference": "Hinge U",
+    "Width": 415,
+    "Length": 383,
+    "Depth": 431,
+    "Weight": 4.81
+  },
+  {
+    "ItemCode": "ITM-449",
+    "ItemReference": "Frame A",
+    "Width": 63,
+    "Length": 59,
+    "Depth": 63,
+    "Weight": 0.42,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-450",
+    "ItemReference": "Module R",
+    "Width": 1100,
+    "Length": 647,
+    "Depth": 573,
+    "Weight": 28.63
+  },
+  {
+    "ItemCode": "ITM-451",
+    "ItemReference": "Kit W",
+    "Width": 51,
+    "Length": 20,
+    "Depth": 32,
+    "Weight": 0.06,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-452",
+    "ItemReference": "Mount N",
+    "Width": 304,
+    "Length": 306,
+    "Depth": 198,
+    "Weight": 2.06,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-453",
+    "ItemReference": "Sensor B",
+    "Width": 120,
+    "Length": 112,
+    "Depth": 39,
+    "Weight": 0.27,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-454",
+    "ItemReference": "Frame V",
+    "Width": 242,
+    "Length": 171,
+    "Depth": 84,
+    "Weight": 1.1,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-455",
+    "ItemReference": "Bracket P",
+    "Width": 457,
+    "Length": 503,
+    "Depth": 441,
+    "Weight": 9.38
+  },
+  {
+    "ItemCode": "ITM-456",
+    "ItemReference": "Bracket U",
+    "Width": 167,
+    "Length": 214,
+    "Depth": 157,
+    "Weight": 2.48,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-457",
+    "ItemReference": "Case O",
+    "Width": 84,
+    "Length": 122,
+    "Depth": 27,
+    "Weight": 0.4
+  },
+  {
+    "ItemCode": "ITM-458",
+    "ItemReference": "Sensor C",
+    "Width": 326,
+    "Length": 258,
+    "Depth": 165,
+    "Weight": 4.88
+  },
+  {
+    "ItemCode": "ITM-459",
+    "ItemReference": "Controller B",
+    "Width": 567,
+    "Length": 514,
+    "Depth": 474,
+    "Weight": 11.56
+  },
+  {
+    "ItemCode": "ITM-460",
+    "ItemReference": "Hinge H",
+    "Width": 140,
+    "Length": 221,
+    "Depth": 242,
+    "Weight": 1.14
+  },
+  {
+    "ItemCode": "ITM-461",
+    "ItemReference": "Battery Z",
+    "Width": 278,
+    "Length": 157,
+    "Depth": 90,
+    "Weight": 4.8,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-462",
+    "ItemReference": "Cable Z",
+    "Width": 55,
+    "Length": 104,
+    "Depth": 30,
+    "Weight": 1.48,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-463",
+    "ItemReference": "Fixture T",
+    "Width": 143,
+    "Length": 58,
+    "Depth": 31,
+    "Weight": 0.7,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-464",
+    "ItemReference": "Coupler Q",
+    "Width": 343,
+    "Length": 123,
+    "Depth": 239,
+    "Weight": 3.49,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-465",
+    "ItemReference": "Adapter N",
+    "Width": 46,
+    "Length": 47,
+    "Depth": 11,
+    "Weight": 0.28
+  },
+  {
+    "ItemCode": "ITM-466",
+    "ItemReference": "Sensor Z",
+    "Width": 118,
+    "Length": 94,
+    "Depth": 72,
+    "Weight": 0.54
+  },
+  {
+    "ItemCode": "ITM-467",
+    "ItemReference": "Hinge T",
+    "Width": 164,
+    "Length": 190,
+    "Depth": 163,
+    "Weight": 1.58
+  },
+  {
+    "ItemCode": "ITM-468",
+    "ItemReference": "Charger B",
+    "Width": 92,
+    "Length": 138,
+    "Depth": 50,
+    "Weight": 0.26,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-469",
+    "ItemReference": "Lamp A",
+    "Width": 88,
+    "Length": 89,
+    "Depth": 55,
+    "Weight": 1.3
+  },
+  {
+    "ItemCode": "ITM-470",
+    "ItemReference": "Sensor H",
+    "Width": 57,
+    "Length": 38,
+    "Depth": 25,
+    "Weight": 0.1,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-471",
+    "ItemReference": "Bracket G",
+    "Width": 102,
+    "Length": 144,
+    "Depth": 82,
+    "Weight": 1.19
+  },
+  {
+    "ItemCode": "ITM-472",
+    "ItemReference": "Sprocket Q",
+    "Width": 333,
+    "Length": 459,
+    "Depth": 459,
+    "Weight": 8.44
+  },
+  {
+    "ItemCode": "ITM-473",
+    "ItemReference": "Battery S",
+    "Width": 22,
+    "Length": 22,
+    "Depth": 8,
+    "Weight": 0.09,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-474",
+    "ItemReference": "Mount I",
+    "Width": 109,
+    "Length": 114,
+    "Depth": 70,
+    "Weight": 1.03,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-475",
+    "ItemReference": "Valve L",
+    "Width": 234,
+    "Length": 165,
+    "Depth": 181,
+    "Weight": 3.35,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-476",
+    "ItemReference": "Bearing X",
+    "Width": 346,
+    "Length": 445,
+    "Depth": 214,
+    "Weight": 8.25,
+    "BoxGroup": "GROUP-E"
+  },
+  {
+    "ItemCode": "ITM-477",
+    "ItemReference": "Cable H",
+    "Width": 293,
+    "Length": 172,
+    "Depth": 128,
+    "Weight": 3.61,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-478",
+    "ItemReference": "Widget P",
+    "Width": 631,
+    "Length": 388,
+    "Depth": 204,
+    "Weight": 6.46
+  },
+  {
+    "ItemCode": "ITM-479",
+    "ItemReference": "Clip W",
+    "Width": 929,
+    "Length": 740,
+    "Depth": 616,
+    "Weight": 37.07
+  },
+  {
+    "ItemCode": "ITM-480",
+    "ItemReference": "Tool I",
+    "Width": 88,
+    "Length": 136,
+    "Depth": 86,
+    "Weight": 1.27,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-481",
+    "ItemReference": "Widget Q",
+    "Width": 1094,
+    "Length": 1031,
+    "Depth": 829,
+    "Weight": 22.48
+  },
+  {
+    "ItemCode": "ITM-482",
+    "ItemReference": "Plate J",
+    "Width": 63,
+    "Length": 111,
+    "Depth": 28,
+    "Weight": 0.64,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-483",
+    "ItemReference": "Coupler I",
+    "Width": 348,
+    "Length": 286,
+    "Depth": 136,
+    "Weight": 1.75,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-484",
+    "ItemReference": "Sprocket Z",
+    "Width": 607,
+    "Length": 506,
+    "Depth": 363,
+    "Weight": 11.49
+  },
+  {
+    "ItemCode": "ITM-485",
+    "ItemReference": "Board J",
+    "Width": 103,
+    "Length": 101,
+    "Depth": 69,
+    "Weight": 1.16
+  },
+  {
+    "ItemCode": "ITM-486",
+    "ItemReference": "Hinge G",
+    "Width": 141,
+    "Length": 78,
+    "Depth": 88,
+    "Weight": 1.03,
+    "BoxGroup": "GROUP-F"
+  },
+  {
+    "ItemCode": "ITM-487",
+    "ItemReference": "Ornament Q",
+    "Width": 71,
+    "Length": 134,
+    "Depth": 91,
+    "Weight": 0.44,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-488",
+    "ItemReference": "Bearing X",
+    "Width": 690,
+    "Length": 393,
+    "Depth": 371,
+    "Weight": 11.2,
+    "BoxGroup": "GROUP-B"
+  },
+  {
+    "ItemCode": "ITM-489",
+    "ItemReference": "Clip N",
+    "Width": 469,
+    "Length": 490,
+    "Depth": 333,
+    "Weight": 10.44,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-490",
+    "ItemReference": "Kit B",
+    "Width": 598,
+    "Length": 597,
+    "Depth": 236,
+    "Weight": 9.19,
+    "BoxGroup": "GROUP-A"
+  },
+  {
+    "ItemCode": "ITM-491",
+    "ItemReference": "Speaker Q",
+    "Width": 56,
+    "Length": 69,
+    "Depth": 37,
+    "Weight": 1.49,
+    "BoxGroup": "GROUP-E"
+  },
+  {
+    "ItemCode": "ITM-492",
+    "ItemReference": "Tool E",
+    "Width": 141,
+    "Length": 73,
+    "Depth": 30,
+    "Weight": 0.83
+  },
+  {
+    "ItemCode": "ITM-493",
+    "ItemReference": "Casing K",
+    "Width": 121,
+    "Length": 235,
+    "Depth": 130,
+    "Weight": 1.84
+  },
+  {
+    "ItemCode": "ITM-494",
+    "ItemReference": "Hinge Y",
+    "Width": 150,
+    "Length": 147,
+    "Depth": 31,
+    "Weight": 0.37,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-495",
+    "ItemReference": "Charger N",
+    "Width": 796,
+    "Length": 602,
+    "Depth": 419,
+    "Weight": 26.95
+  },
+  {
+    "ItemCode": "ITM-496",
+    "ItemReference": "Widget K",
+    "Width": 571,
+    "Length": 397,
+    "Depth": 209,
+    "Weight": 11.44
+  },
+  {
+    "ItemCode": "ITM-497",
+    "ItemReference": "Valve H",
+    "Width": 208,
+    "Length": 199,
+    "Depth": 93,
+    "Weight": 1.41,
+    "BoxGroup": "GROUP-C"
+  },
+  {
+    "ItemCode": "ITM-498",
+    "ItemReference": "Panel C",
+    "Width": 452,
+    "Length": 448,
+    "Depth": 433,
+    "Weight": 12.01
+  },
+  {
+    "ItemCode": "ITM-499",
+    "ItemReference": "Figurine N",
+    "Width": 368,
+    "Length": 475,
+    "Depth": 450,
+    "Weight": 7.95,
+    "BoxGroup": "GROUP-D"
+  },
+  {
+    "ItemCode": "ITM-500",
+    "ItemReference": "Gadget H",
+    "Width": 66,
+    "Length": 77,
+    "Depth": 22,
+    "Weight": 0.97,
+    "BoxGroup": "GROUP-C"
+  }
+]

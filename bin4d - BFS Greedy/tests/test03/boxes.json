@@ -1,0 +1,165 @@
+[
+  {
+    "Reference": "XXS",
+    "Width": 80,
+    "Length": 80,
+    "Depth": 80,
+    "MaxWeight": 3.0,
+    "BoxWeight": 0.15,
+    "Active": true,
+    "MaximumBoxes": 200
+  },
+  {
+    "Reference": "XS",
+    "Width": 120,
+    "Length": 120,
+    "Depth": 120,
+    "MaxWeight": 5.0,
+    "BoxWeight": 0.3,
+    "Active": true,
+    "MaximumBoxes": 150
+  },
+  {
+    "Reference": "SML",
+    "Width": 150,
+    "Length": 150,
+    "Depth": 150,
+    "MaxWeight": 8.5,
+    "BoxWeight": 0.5,
+    "Active": true,
+    "MaximumBoxes": 100
+  },
+  {
+    "Reference": "SML-L",
+    "Width": 200,
+    "Length": 150,
+    "Depth": 150,
+    "MaxWeight": 9.0,
+    "BoxWeight": 0.55,
+    "Active": true,
+    "MaximumBoxes": 100
+  },
+  {
+    "Reference": "MED",
+    "Width": 400,
+    "Length": 400,
+    "Depth": 400,
+    "MaxWeight": 15.2,
+    "BoxWeight": 0.75,
+    "Active": true
+  },
+  {
+    "Reference": "MED-F",
+    "Width": 400,
+    "Length": 300,
+    "Depth": 250,
+    "MaxWeight": 14.0,
+    "BoxWeight": 0.7,
+    "Active": true
+  },
+  {
+    "Reference": "MED-T",
+    "Width": 350,
+    "Length": 350,
+    "Depth": 500,
+    "MaxWeight": 16.0,
+    "BoxWeight": 0.85,
+    "Active": true
+  },
+  {
+    "Reference": "LRG",
+    "Width": 1200,
+    "Length": 1200,
+    "Depth": 1200,
+    "Active": false
+  },
+  {
+    "Reference": "LRG-A",
+    "Width": 600,
+    "Length": 600,
+    "Depth": 600,
+    "MaxWeight": 25.0,
+    "BoxWeight": 1.4,
+    "Active": true,
+    "MaximumBoxes": 60
+  },
+  {
+    "Reference": "LRG-B",
+    "Width": 800,
+    "Length": 500,
+    "Depth": 400,
+    "MaxWeight": 28.0,
+    "BoxWeight": 1.6,
+    "Active": true,
+    "MaximumBoxes": 40
+  },
+  {
+    "Reference": "XL",
+    "Width": 1000,
+    "Length": 800,
+    "Depth": 600,
+    "MaxWeight": 35.0,
+    "BoxWeight": 2.2,
+    "Active": true,
+    "MaximumBoxes": 25
+  },
+  {
+    "Reference": "XXL",
+    "Width": 1200,
+    "Length": 900,
+    "Depth": 800,
+    "MaxWeight": 45.0,
+    "BoxWeight": 3.0,
+    "Active": true,
+    "MaximumBoxes": 15
+  },
+  {
+    "Reference": "FLAT-A4",
+    "Width": 320,
+    "Length": 230,
+    "Depth": 30,
+    "MaxWeight": 2.0,
+    "BoxWeight": 0.1,
+    "Active": true,
+    "MaximumBoxes": 300
+  },
+  {
+    "Reference": "FLAT-A3",
+    "Width": 450,
+    "Length": 320,
+    "Depth": 40,
+    "MaxWeight": 3.0,
+    "BoxWeight": 0.15,
+    "Active": true,
+    "MaximumBoxes": 200
+  },
+  {
+    "Reference": "TUBE-S",
+    "Width": 100,
+    "Length": 100,
+    "Depth": 600,
+    "MaxWeight": 6.0,
+    "BoxWeight": 0.35,
+    "Active": true,
+    "MaximumBoxes": 80
+  },
+  {
+    "Reference": "TUBE-L",
+    "Width": 150,
+    "Length": 150,
+    "Depth": 1000,
+    "MaxWeight": 10.0,
+    "BoxWeight": 0.6,
+    "Active": true,
+    "MaximumBoxes": 50
+  },
+  {
+    "Reference": "PALLET",
+    "Width": 1200,
+    "Length": 1000,
+    "Depth": 1500,
+    "MaxWeight": 500.0,
+    "BoxWeight": 15.0,
+    "Active": false
+  }
+]
