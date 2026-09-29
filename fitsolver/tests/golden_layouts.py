@@ -14,6 +14,9 @@ far:
     phase 3  reproduced exactly; pre-checks and the memo are speed only
     phase 4  re-recorded; multi-start and canonical input ordering change
              layouts by design
+    phase 5  re-recorded; the size-dependent ordering and CHUNK 240 change
+             layouts by design. Two fixtures improved by a carton, none got
+             worse
 
 To re-record, deliberately, after an approved change of behaviour:
 

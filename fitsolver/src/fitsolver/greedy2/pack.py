@@ -71,31 +71,110 @@ from .geometry import (
 # more time, and changes nothing on W2, W3 or W4.
 MAX_CANDIDATES = 128
 
-CHUNK = 120           # items offered to each carton; bounds n^2 growth
+# Items offered to each carton per round. Bounds n^2 growth: without it, cost
+# grows about n^1.6 and a 1600-item order takes 11 s.
+#
+# Re-measured in phase 5, now that placement is much cheaper than it was when
+# 120 was chosen. Geometry-bound, 1200 ms budget, cartons and wall time:
+#
+#     CHUNK       W1            W2           W3          W4
+#       120   21 / 3.66 s   21 / 0.39 s   46 / 1.32   28 / 0.12
+#       240   20 / 7.06 s   21 / 0.74 s   46 / 1.33   28 / 0.13
+#      none   20 / 17.04 s  20 / 1.29 s   46 / 1.35   28 / 0.12
+#
+# 240 it is. It matches no chunking at all on W1, the hardest workload, for a
+# quarter of the time, and it is a carton better there than 120. Dropping
+# chunking entirely buys one further carton on W2 and costs 2.4x on W1, which
+# is not a trade worth making.
+#
+# Nothing under 240 items is affected, which is every order that fits inside
+# the synchronous budget, so this is a batch-path decision only.
+CHUNK = 240
+
+
+def conflict(a: Item, b: Item) -> bool:
+    """Can these two never share a carton?
+
+    An edge means an explicit incompatibility either way round, or two
+    differing dangerous-goods classes. An unset dg_class conflicts with
+    nothing: it is "not regulated", not "a class of its own".
+
+    Kept as the readable definition of the rule. split_compatible no longer
+    calls it per pair, but the tests check the fast path against it.
+    """
+    if b.ref in a.incompatible_with or a.ref in b.incompatible_with:
+        return True
+    return bool(a.dg_class and b.dg_class and a.dg_class != b.dg_class)
+
+
+class _Group:
+    """One colour class, plus the indexes that make joining it a set lookup."""
+
+    __slots__ = ("items", "dg", "member_refs", "barred_refs")
+
+    def __init__(self) -> None:
+        self.items: list[Item] = []
+        # At most one non-None dg_class can ever be present, since two
+        # differing classes conflict. None means "nothing regulated yet".
+        self.dg: str | None = None
+        self.member_refs: set[str] = set()
+        # Every ref any member refuses to share with.
+        self.barred_refs: set[str] = set()
+
+    def admits(self, item: Item) -> bool:
+        if self.dg is not None and item.dg_class and self.dg != item.dg_class:
+            return False
+        if item.ref in self.barred_refs:
+            return False
+        return not (item.incompatible_with and
+                    item.incompatible_with & self.member_refs)
+
+    def add(self, item: Item) -> None:
+        self.items.append(item)
+        if item.dg_class:
+            self.dg = item.dg_class
+        self.member_refs.add(item.ref)
+        if item.incompatible_with:
+            self.barred_refs |= item.incompatible_with
 
 
 def split_compatible(items: Sequence[Item]) -> list[list[Item]]:
     """Greedy colouring over the conflict graph.
 
-    An edge means "cannot share a carton": an explicit incompatibility, or two
-    differing dangerous-goods classes. Each colour class packs independently.
-    This is how DG segregation, incompatibility and customer rules are
-    enforced, before any geometry runs, so the geometry stays constraint-free.
-    """
-    def conflict(a: Item, b: Item) -> bool:
-        if b.ref in a.incompatible_with or a.ref in b.incompatible_with:
-            return True
-        return bool(a.dg_class and b.dg_class and a.dg_class != b.dg_class)
+    Each colour class packs independently. This is how DG segregation,
+    incompatibility and customer rules are enforced, before any geometry runs,
+    so the geometry stays constraint-free.
 
-    groups: list[list[Item]] = []
+    Same colouring as the obvious version, which tests every pair, but not the
+    same cost. That version asks "does this item conflict with ANY member",
+    walking the whole group, so a 1000-item order with no constraints at all
+    still does half a million comparisons to build its single group.
+
+    Here each group carries three summaries instead:
+
+      dg           the one regulated class present, if any. Two differing
+                   classes conflict, so a group can never hold more than one.
+      member_refs  what is in the group, to test against the item's own
+                   incompatible_with.
+      barred_refs  everything the members refuse, to test the item's ref
+                   against.
+
+    So admission is a set lookup rather than a scan, and an item with no
+    incompatible_with entries, which is nearly all of them, costs O(1). Groups
+    are still visited in creation order and the first that admits the item
+    takes it, so the colouring is identical.
+    """
+    groups: list[_Group] = []
     for item in items:
         for g in groups:
-            if not any(conflict(item, other) for other in g):
-                g.append(item)
+            if g.admits(item):
+                g.add(item)
                 break
         else:
-            groups.append([item])
-    return groups
+            g = _Group()
+            g.add(item)
+            groups.append(g)
+    return [g.items for g in groups]
 
 
 class CartonState:
@@ -371,17 +450,52 @@ def canonical_key(item: Item) -> tuple:
             tuple(sorted(item.incompatible_with)), item.ref)
 
 
-# The orderings tried, in this fixed sequence. Names are reported in the
-# benchmark; the functions return NEGATED values so that a plain ascending
-# sort is descending in the quantity that matters, which keeps Python's stable
-# sort intact. Stability is what breaks ties by canonical position, so no tie
-# is ever resolved by anything that varies between runs.
+# The orderings available. The functions return NEGATED values so that a plain
+# ascending sort is descending in the quantity that matters, which keeps
+# Python's stable sort intact. Stability is what breaks ties by canonical
+# position, so no tie is ever resolved by anything that varies between runs.
 SORT_KEYS: tuple[tuple[str, object], ...] = (
     ("volume", lambda i: (-i.volume,)),
     ("longest_edge", lambda i: (-max(i.dims), -min(i.dims))),
     ("tallest", lambda i: (-max(i.dims), -i.volume)),
     ("base_area", lambda i: (-(i.dims[0] * i.dims[1]), -i.volume)),
 )
+
+# Which ordering to try FIRST depends on the size of the order, because no
+# single ordering wins everywhere and the budget often pays for only one pass.
+# Trying them in a size-blind sequence meant large orders spent their one pass
+# on the ordering that suited them worst.
+#
+# Measured over 8 seeds per size, single pass, mean cartons (geometry-bound):
+#
+#     items   volume   longest_edge   tallest   base_area
+#       100     2.62           2.88      2.88        2.88
+#       200     4.75           4.88      4.75        4.88
+#       250     5.75           5.75      5.75        5.75
+#       300     6.88           6.75      6.75        6.75
+#       400     9.38           8.50      8.50        9.00
+#       600    14.00          12.38     12.25       13.25
+#
+# Volume wins or ties up to 250 and loses steadily above it, so 250 is the
+# changeover. Below it the sequence is unchanged. Above it the orderings are
+# listed best-measured first, which costs nothing when all four run and is
+# worth several cartons when only one does.
+LARGE_ORDER_ITEMS = 250
+
+_SMALL_FIRST = ("volume", "longest_edge", "tallest", "base_area")
+_LARGE_FIRST = ("longest_edge", "tallest", "base_area", "volume")
+
+
+def sort_keys_for(n_items: int) -> tuple[tuple[str, object], ...]:
+    """The orderings to try, best-first for an order of this size.
+
+    Size-dependent, but fixed and table-driven: the same item count always
+    yields the same sequence, so this cannot make a layout depend on anything
+    outside the request.
+    """
+    by_name = dict(SORT_KEYS)
+    names = _SMALL_FIRST if n_items <= LARGE_ORDER_ITEMS else _LARGE_FIRST
+    return tuple((n, by_name[n]) for n in names)
 
 
 # Measured cost of ONE packing pass, as (up to this many items, milliseconds).
@@ -523,7 +637,8 @@ def pack(items: Sequence[Item], cartons: Sequence[Carton],
 
     best: tuple[list[PackedCarton], list[Item]] | None = None
     best_key: tuple[int, int, int] | None = None
-    for _name, sort_key in SORT_KEYS[:passes_for(len(canonical), time_budget_ms)]:
+    keys = sort_keys_for(len(canonical))
+    for _name, sort_key in keys[:passes_for(len(canonical), time_budget_ms)]:
         packed, unplaced = _run_pass(groups, cartons, table, sort_key)
         key = result_key(packed, unplaced)
         if best_key is None or key < best_key:
