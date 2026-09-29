@@ -386,9 +386,13 @@ def pack_one(ordering: Sequence[Item], cartons: Sequence[Carton],
 
     THE ONE THING THAT MATTERS. At each step, evaluate EVERY carton type
     against the remaining items and take the one packing the most items,
-    tie-breaking on the smallest carton. The obvious alternative, opening the
-    smallest carton that fits the next item, produces 73 cartons where this
-    produces 28 on the same input.
+    tie-breaking on the smallest carton.
+
+    Measured against the obvious alternative, opening the smallest carton that
+    fits the next item, with everything else here unchanged: 28 cartons against
+    143 on W4, 47 against 513 on W3, 21 against 505 on W2. Five to twenty times
+    worse. v1's docstring puts this at 73 against 28; that number does not
+    reproduce on any of these workloads and the table above replaces it.
 
     Only the first CHUNK remaining items are offered to each carton. Without
     this, cost grows about n^1.6 and a 1600-item order takes 11 s. Nothing is
