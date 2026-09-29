@@ -1,14 +1,19 @@
-"""The golden-layout fixture: what greedy2 produced at the end of Phase 2.
+"""The golden-layout fixture: exactly what greedy2 currently lays out.
 
-Phases 3 and 5 are speed work. They are supposed to make greedy2 faster while
-leaving every layout exactly as it was, and "exactly" is not something a carton
-count can check: two runs can agree on how many cartons they used and disagree
-about where every item went.
+Some phases are speed work and must leave every layout untouched. "Untouched"
+is not something a carton count can check: two runs can agree on how many
+cartons they used and disagree about where every item went. So the layouts are
+recorded and compared placement by placement.
 
-So the layouts are recorded once and compared placement by placement
-afterwards. tests/data/phase2_layouts.json holds them. This module owns the
-workloads, the encoding and the regenerate entry point, so the test file only
-has to compare.
+tests/data/greedy2_layouts.json holds them. This module owns the workloads,
+the encoding and the regenerate entry point, so the test file only compares.
+
+Re-recorded when behaviour changes ON PURPOSE, and only then. The history so
+far:
+    phase 2  first recorded, at MAX_CANDIDATES 128
+    phase 3  reproduced exactly; pre-checks and the memo are speed only
+    phase 4  re-recorded; multi-start and canonical input ordering change
+             layouts by design
 
 To re-record, deliberately, after an approved change of behaviour:
 
@@ -30,7 +35,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from fitsolver.domain import Carton, Item  # noqa: E402
 
-DATA = Path(__file__).resolve().parent / "data" / "phase2_layouts.json"
+DATA = Path(__file__).resolve().parent / "data" / "greedy2_layouts.json"
 
 # The four bench cartons, with and without mass limits, so both regimes are
 # covered: with limits, mass rather than geometry is what runs out.

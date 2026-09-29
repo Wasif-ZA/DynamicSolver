@@ -1,17 +1,14 @@
-"""Phase 3: pre-checks and the infeasibility memo. Speed only, no new layouts.
+"""Phase 3: pre-checks and the infeasibility memo, unit by unit.
 
-Everything here is either "the fast path agrees with the slow one" or "the
-layout did not move". Phase 3 adds no heuristic: each pre-check is exact, so
-it may only ever skip work that was provably going to fail.
+Phase 3 adds no heuristic: each pre-check is exact, so it may only ever skip
+work that was provably going to fail. That the layouts did not move is checked
+in test_greedy2_layouts.py, against the recorded baseline.
 
 The one deliberate behaviour change is the up-front rejection of items no
 carton can hold, covered at the bottom. It fixes a false-rejection bug, so it
 is tested for what it now does rather than for staying the same.
 """
 from __future__ import annotations
-
-import json
-from functools import lru_cache
 
 import pytest
 from hypothesis import given, settings
@@ -34,7 +31,6 @@ from fitsolver.greedy2.pack import (
     smallest_dim_suffixes,
 )
 from fitsolver.greedy2.pack import pack as greedy2_pack
-from golden_layouts import DATA, produce
 
 CARTONS = [
     Carton("S", (220, 160, 120), 120, 5000),
@@ -53,25 +49,6 @@ item_st = st.builds(Item, ref=st.just("X"), dims=dims_st, mass=st.just(1),
 # --------------------------------------------------------------------------- #
 # The layout must not move. This is the phase's acceptance criterion.
 # --------------------------------------------------------------------------- #
-
-GOLDEN = json.loads(DATA.read_text())
-
-
-@lru_cache(maxsize=1)
-def _current() -> dict:
-    """Solve every recorded workload once, not once per parametrized case."""
-    return produce()
-
-
-@pytest.mark.parametrize("key", sorted(GOLDEN))
-def test_layouts_are_unchanged_from_phase_2(key):
-    """Placement by placement, against layouts recorded before this phase.
-
-    A carton count would not catch this: two runs can agree on how many
-    cartons they used and disagree about where every item went.
-    """
-    assert _current()[key] == GOLDEN[key]
-
 
 # --------------------------------------------------------------------------- #
 # The O(1) room test has to be exact, not merely conservative.
@@ -301,10 +278,3 @@ def test_conservation_holds_with_a_mix_of_causes():
     placed = sum(len(c.placements) for c in sol.cartons)
     assert placed == 1
     assert placed + len(sol.rejects) == len(items)
-
-
-def test_recorded_layouts_are_current():
-    """Guards the fixture itself: if golden_layouts.py's workloads change but
-    the data file is not re-recorded, every comparison above silently tests
-    the wrong thing."""
-    assert sorted(_current()) == sorted(GOLDEN)

@@ -355,6 +355,137 @@ def _reject_message(item: Item, cartons: Sequence[Carton],
     return "Exceeds every carton in all permitted orientations"
 
 
+def canonical_key(item: Item) -> tuple:
+    """Total order over items that ignores where they arrived in the request.
+
+    Two orders holding the same goods in a different sequence must produce the
+    same layout, or a packer who re-keys an order gets a different picture for
+    no reason. Sorting by content alone is what guarantees that.
+
+    Every field that can affect packing is included, including
+    incompatible_with, which decides grouping. dg_class is split into
+    "is it set" and its value because None cannot be compared to a string.
+    """
+    return (item.dims, item.mass, item.allowed_rotations,
+            item.dg_class is None, item.dg_class or "",
+            tuple(sorted(item.incompatible_with)), item.ref)
+
+
+# The orderings tried, in this fixed sequence. Names are reported in the
+# benchmark; the functions return NEGATED values so that a plain ascending
+# sort is descending in the quantity that matters, which keeps Python's stable
+# sort intact. Stability is what breaks ties by canonical position, so no tie
+# is ever resolved by anything that varies between runs.
+SORT_KEYS: tuple[tuple[str, object], ...] = (
+    ("volume", lambda i: (-i.volume,)),
+    ("longest_edge", lambda i: (-max(i.dims), -min(i.dims))),
+    ("tallest", lambda i: (-max(i.dims), -i.volume)),
+    ("base_area", lambda i: (-(i.dims[0] * i.dims[1]), -i.volume)),
+)
+
+
+# Measured cost of ONE packing pass, as (up to this many items, milliseconds).
+# Produced by bench/calibrate_passes.py on the development machine, using the
+# slowest of the four orderings at each size so the estimate is never
+# optimistic. Re-run that script and replace this table if the target machine
+# is much faster or slower.
+#
+# It is a table and not a measurement because the decision has to be made
+# before any packing starts. Timing the solve and stopping when the budget
+# runs out would make the layout depend on machine load, so the same request
+# would come back different on a busy afternoon. A fixed table keeps the
+# answer reproducible, which is worth more here than using every last
+# millisecond.
+PASS_COST_MS: tuple[tuple[int, int], ...] = (
+    (25, 15), (50, 50), (100, 205), (200, 620), (300, 1300),
+    (500, 2450), (750, 4100), (1000, 5600),
+)
+
+# Cost grows faster than linearly, so anything past the table is extrapolated
+# from the last row rather than assumed to cost the same.
+_LAST_N, _LAST_MS = PASS_COST_MS[-1]
+
+
+def estimated_pass_ms(n_items: int) -> int:
+    """What one pass over this many items is expected to cost."""
+    for limit, ms in PASS_COST_MS:
+        if n_items <= limit:
+            return ms
+    return max(_LAST_MS, _LAST_MS * n_items // _LAST_N)
+
+
+def passes_for(n_items: int, time_budget_ms: int) -> int:
+    """How many orderings to try. Always at least one, never more than four.
+
+    At least one because an answer is not optional. At most four because
+    SORT_KEYS holds four, and measurement says the fourth rarely adds anything
+    that the second has not already found.
+    """
+    if n_items <= 0:
+        return 1
+    affordable = time_budget_ms // estimated_pass_ms(n_items)
+    return max(1, min(len(SORT_KEYS), affordable))
+
+
+def lower_bound(groups: Sequence[Sequence[Item]],
+                cartons: Sequence[Carton]) -> int:
+    """Fewest cartons any correct solution could possibly use.
+
+    Summed per conflict group, because groups cannot share a carton, which
+    makes the sum a stronger bound than one taken over the whole order.
+
+    Two bounds per group, whichever is larger:
+      volume, total item volume over the largest carton's volume;
+      mass, total item mass over the largest mass limit.
+
+    The mass bound only counts when EVERY carton has a limit. One unlimited
+    carton and the bound collapses to 1, which would be worse than useless:
+    an early stop on a bound that is too low would stop at a layout that is
+    not optimal while claiming it is.
+
+    Integer ceiling by -(-a // b), so there is no float anywhere near this.
+    """
+    biggest_volume = max((c.volume for c in cartons), default=0)
+    limits = [c.max_contents_mass for c in cartons]
+    biggest_mass = None if any(x is None for x in limits) else max(limits)
+
+    total = 0
+    for group in groups:
+        if not group:
+            continue
+        bound = 1
+        if biggest_volume:
+            bound = max(bound, -(-sum(i.volume for i in group) // biggest_volume))
+        if biggest_mass:
+            bound = max(bound, -(-sum(i.mass for i in group) // biggest_mass))
+        total += bound
+    return total
+
+
+def result_key(packed: Sequence[PackedCarton],
+               unplaced: Sequence[Item]) -> tuple[int, int, int]:
+    """The objective, lexicographically: unplaced, then cartons, then volume.
+
+    Fill rate is deliberately absent. Maximising fill rewards many small tight
+    cartons, which is the opposite of what the client asked for.
+    """
+    return (len(unplaced), len(packed),
+            sum(c.carton.volume for c in packed))
+
+
+def _run_pass(groups: Sequence[list[Item]], cartons: Sequence[Carton],
+              table: dict[tuple, tuple[int, ...]], sort_key
+              ) -> tuple[list[PackedCarton], list[Item]]:
+    """One complete packing pass over every conflict group, in one ordering."""
+    packed: list[PackedCarton] = []
+    unplaced: list[Item] = []
+    for group in groups:
+        out, left = pack_one(sorted(group, key=sort_key), cartons, table)
+        packed.extend(out)
+        unplaced.extend(left)
+    return packed, unplaced
+
+
 def pack(items: Sequence[Item], cartons: Sequence[Carton],
          time_budget_ms: int, seed: int) -> Solution:
     """Solve. One deterministic pass per conflict group.
@@ -363,11 +494,13 @@ def pack(items: Sequence[Item], cartons: Sequence[Carton],
     request returns the same layout on any machine, every time, which matters
     when a packer re-scans an order and expects the same picture.
 
-    `time_budget_ms` and `seed` are honoured as contract fields, reported back
-    in the solution document, but unused by this implementation. From Phase 4
-    the budget does steer how much work is done, but only through a fixed
-    size-based table, never by reading the clock mid-solve, because a
-    clock-dependent decision would make the layout differ between runs.
+`seed` is honoured as a contract field and reported back, but unused:
+    there is nothing random to seed. `time_budget_ms` chooses how many
+    orderings to try, through the fixed table in passes_for, and is never
+    compared against a clock mid-solve. Reading the clock would make the
+    layout depend on how loaded the machine was, so the same request would
+    come back different, which is the one thing this solver promises not to
+    do.
     """
     t0 = time.monotonic()
     table = carton_fit_table(items, cartons)
@@ -382,12 +515,24 @@ def pack(items: Sequence[Item], cartons: Sequence[Carton],
         (packable if _fits_some_carton(item, cartons, table)
          else all_unplaced).append(item)
 
-    all_cartons: list[PackedCarton] = []
-    for group in split_compatible(packable):
-        ordering = sorted(group, key=lambda i: i.volume, reverse=True)
-        packed, unplaced = pack_one(ordering, cartons, table)
-        all_cartons.extend(packed)
-        all_unplaced.extend(unplaced)
+    # Canonical order first, so the conflict grouping below and every sort
+    # above it depend on what was ordered, never on the sequence it arrived in.
+    canonical = sorted(packable, key=canonical_key)
+    groups = split_compatible(canonical)
+    bound = lower_bound(groups, cartons)
+
+    best: tuple[list[PackedCarton], list[Item]] | None = None
+    best_key: tuple[int, int, int] | None = None
+    for _name, sort_key in SORT_KEYS[:passes_for(len(canonical), time_budget_ms)]:
+        packed, unplaced = _run_pass(groups, cartons, table, sort_key)
+        key = result_key(packed, unplaced)
+        if best_key is None or key < best_key:
+            best_key, best = key, (packed, unplaced)
+        if not unplaced and len(packed) == bound:
+            break  # optimal on carton count; no ordering can beat it
+
+    all_cartons, group_unplaced = best if best is not None else ([], [])
+    all_unplaced.extend(group_unplaced)
 
     rejects = [Reject(item_ref=i.ref, reason_code="NO_FITTING_CARTON",
                       message=_reject_message(i, cartons, table))
