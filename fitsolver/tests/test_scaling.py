@@ -19,7 +19,7 @@ import pytest
 
 from fitsolver.domain import Carton, Item
 from fitsolver.geometry import overlaps
-from fitsolver.pack import pack
+from fitsolver.greedy2.pack import pack
 
 SYNC_CEILING = 300   # items; beyond this, route to the batch endpoint
 

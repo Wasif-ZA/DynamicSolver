@@ -11,7 +11,7 @@ Sprint 2 additions wrap this function without changing it:
 from __future__ import annotations
 
 from . import io
-from .pack import pack
+from .greedy2.pack import pack
 
 
 def solve(payload: dict) -> dict:
