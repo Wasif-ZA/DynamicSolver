@@ -5,9 +5,12 @@ rather than imported. v1's geometry.py is frozen, so copying is what lets
 greedy2 change candidate generation in later phases without any risk of
 altering v1's output.
 
-Phase 2 changes one thing here: candidate points that nothing can ever be
-placed at are no longer returned. Orientation, overlap and support are still
-v1's, unchanged.
+Phase 2 changed one thing here: candidate points that nothing can ever be
+placed at are no longer returned.
+
+Phase 3 adds pre-checks that are exact rather than approximate, so they only
+ever skip work that was provably going to fail. Orientation, overlap and
+support are still v1's, unchanged.
 """
 from __future__ import annotations
 
@@ -132,6 +135,53 @@ def is_live(pt: tuple[int, int, int], carton: Carton,
     if any(pt[a] >= carton.inner_dims[a] for a in range(3)):
         return False
     return not any(covered_by(pt, p.pos, p.dims) for p in placed)
+
+
+def room_at(pt: tuple[int, int, int], carton: Carton) -> tuple[int, int, int]:
+    """Space from this point to the far walls, per axis."""
+    return (carton.inner_dims[0] - pt[0],
+            carton.inner_dims[1] - pt[1],
+            carton.inner_dims[2] - pt[2])
+
+
+def room_admits(item: Item, room: tuple[int, int, int]) -> bool:
+    """Could ANY permitted orientation of this item fit in this room? O(1).
+
+    A cheap, exact pre-check. No orientation loop, no overlap scan. If it says
+    no, every orientation is too big and the point can be skipped outright.
+
+    For "any" rotation the test is the sorted comparison: a box with sides
+    a <= b <= c fits a room p <= q <= r in some axis-aligned orientation if and
+    only if a <= p and b <= q and c <= r. Sorting both and comparing
+    elementwise is therefore exact, not a heuristic, and it replaces up to six
+    orientation trials with three integer comparisons.
+
+    For "upright" the height axis is pinned, so the height must fit as given
+    and the footprint is compared the same sorted way in two dimensions. For
+    "fixed" nothing may turn, so the comparison is direct.
+
+    Every comparison is <=, never <: an item may sit exactly flush against a
+    wall. Using < here would refuse every perfectly-fitting item, which is the
+    single most expensive off-by-one available in this file.
+    """
+    if item.allowed_rotations == "fixed":
+        return all(item.dims[a] <= room[a] for a in range(3))
+    if item.allowed_rotations == "upright":
+        if item.dims[2] > room[2]:
+            return False
+        base = sorted(item.dims[:2])
+        space = sorted(room[:2])
+        return base[0] <= space[0] and base[1] <= space[1]
+    return all(d <= r for d, r in zip(sorted(item.dims), sorted(room), strict=True))
+
+
+def fits_empty_carton(item: Item, carton: Carton) -> bool:
+    """Could this item go into this carton at all, if the carton were empty?
+
+    Geometry only. Mass is checked per item rather than per shape, because two
+    items of the same shape can differ in mass.
+    """
+    return room_admits(item, carton.inner_dims)
 
 
 def candidates(placed: list[Placement], carton: Carton) -> list[tuple[int, int, int]]:

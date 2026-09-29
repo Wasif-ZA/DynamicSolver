@@ -44,7 +44,18 @@ from bisect import insort
 from collections.abc import Sequence
 
 from ..domain import Carton, Item, PackedCarton, Placement, Reject, Solution
-from .geometry import covered_by, fits, is_live, orientations, point_sort_key
+from .geometry import (
+    covered_by,
+    fits_empty_carton,
+    inside,
+    is_live,
+    orientations,
+    overlaps,
+    point_sort_key,
+    room_admits,
+    room_at,
+    supported,
+)
 
 # Corner points considered per placement. None means no cap.
 #
@@ -52,7 +63,13 @@ from .geometry import covered_by, fits, is_live, orientations, point_sort_key
 # both, badly: half the list was dead points, so a cap of 64 often meant fewer
 # than 32 real options, and the live high points that would have continued a
 # stack were the ones pushed out. With dead points gone, 64 is 64.
-MAX_CANDIDATES = 64
+#
+# Swept at 64, 128 and uncapped once pruning was in. 128 and uncapped give
+# identical layouts, which matches the measured maximum of 118 live points, so
+# at 128 this is a safety bound rather than a choice between points. It is
+# worth 2 cartons on W1 against 64 (25 rather than 27) for about 9 percent
+# more time, and changes nothing on W2, W3 or W4.
+MAX_CANDIDATES = 128
 
 CHUNK = 120           # items offered to each carton; bounds n^2 growth
 
@@ -100,13 +117,16 @@ class CartonState:
     front of it without sorting.
     """
 
-    __slots__ = ("carton", "placements", "contents_mass", "points")
+    __slots__ = ("carton", "placements", "contents_mass", "points", "infeasible")
 
     def __init__(self, carton: Carton) -> None:
         self.carton = carton
         self.placements: list[Placement] = []
         self.contents_mass = 0
         self.points: list[tuple[int, int, int]] = []
+        # (point, dims, allowed_rotations) triples known to be unplaceable.
+        # See place() for why a support failure must never be recorded here.
+        self.infeasible: set[tuple] = set()
         self._offer((0, 0, 0))
 
     def _offer(self, pt: tuple[int, int, int]) -> None:
@@ -137,6 +157,21 @@ class CartonState:
         for corner in ((x + w, y, z), (x, y + d, z), (x, y, z + h)):
             self._offer(corner)
 
+    def drop_points_too_small_for(self, smallest_item_dim: int) -> None:
+        """Forget points whose room is narrower than the smallest item left.
+
+        The room at a point only shrinks, and the items still to come only get
+        smaller under a descending sort, so a point too tight for every
+        remaining item is finished. Dropping it keeps later scans short.
+
+        This cannot change any placement: a point is removed only when no
+        remaining item could occupy it in any orientation, since an item needs
+        its own smallest dimension to fit in the room's smallest dimension
+        whichever way it is turned.
+        """
+        self.points = [q for q in self.points
+                       if min(room_at(q, self.carton)) >= smallest_item_dim]
+
     def packed(self) -> PackedCarton:
         return PackedCarton(carton=self.carton, placements=self.placements)
 
@@ -154,30 +189,78 @@ def place(item: Item, state: CartonState) -> Placement | None:
     if (carton.max_contents_mass is not None
             and state.contents_mass + item.mass > carton.max_contents_mass):
         return None
+
+    shape = (item.dims, item.allowed_rotations)
     for pos in state.points[:MAX_CANDIDATES]:
+        memo_key = (pos, *shape)
+        if memo_key in state.infeasible:
+            continue
+
+        # O(1) exact pre-check: is there room here for any orientation at all?
+        if not room_admits(item, room_at(pos, carton)):
+            state.infeasible.add(memo_key)
+            continue
+
+        # Whether any orientation got as far as failing ONLY on support. That
+        # failure is not permanent: a later item can become this one's floor,
+        # so the point must stay open for retry. Memoising it would refuse
+        # placements that are legal a moment later, which loses cartons
+        # silently rather than failing a test.
+        support_blocked = False
         for orient_idx, dims in orientations(item):
-            if fits(pos, dims, carton, state.placements):
-                return Placement(item=item, pos=pos, dims=dims,
-                                 orientation=orient_idx,
-                                 sequence=len(state.placements))
+            if not inside(pos, dims, carton):
+                continue
+            if any(overlaps(pos, dims, p.pos, p.dims) for p in state.placements):
+                continue
+            if not supported(pos, dims, state.placements):
+                support_blocked = True
+                continue
+            return Placement(item=item, pos=pos, dims=dims,
+                             orientation=orient_idx,
+                             sequence=len(state.placements))
+
+        if not support_blocked:
+            # Every orientation was out of bounds or hit a placed item, and
+            # neither can come undone: the carton never grows and items are
+            # never removed. So this shape can never be placed here again.
+            state.infeasible.add(memo_key)
     return None
+
+
+def smallest_dim_suffixes(items: Sequence[Item]) -> list[int]:
+    """suffix[i] = the smallest dimension among items[i:], or 0 past the end.
+
+    Computed once per carton fill rather than rescanned after every placement,
+    which is what keeps the point removal below cheaper than the scans it
+    saves.
+    """
+    suffix = [0] * (len(items) + 1)
+    for i in range(len(items) - 1, -1, -1):
+        suffix[i] = min(suffix[i + 1] or min(items[i].dims), min(items[i].dims))
+    return suffix
 
 
 def fill_carton(carton: Carton, items: Sequence[Item]
                 ) -> tuple[PackedCarton, list[Item]]:
     """Greedily place items, in the given order, into one carton."""
     state = CartonState(carton)
+    suffix = smallest_dim_suffixes(items)
     left: list[Item] = []
-    for item in items:
+    for i, item in enumerate(items):
         p = place(item, state)
         if p is None:
             left.append(item)
         else:
             state.add(p)
+            # Only after a placement can a point have become too tight, and
+            # only the items still to come matter.
+            if suffix[i + 1]:
+                state.drop_points_too_small_for(suffix[i + 1])
     return state.packed(), left
 
 
-def pack_one(ordering: Sequence[Item], cartons: Sequence[Carton]
+def pack_one(ordering: Sequence[Item], cartons: Sequence[Carton],
+             table: dict[tuple, tuple[int, ...]]
              ) -> tuple[list[PackedCarton], list[Item]]:
     """Fill cartons with items in the given order.
 
@@ -196,13 +279,21 @@ def pack_one(ordering: Sequence[Item], cartons: Sequence[Carton]
     """
     remaining = list(ordering)
     out: list[PackedCarton] = []
-    by_volume = sorted(cartons, key=lambda c: c.volume)
+    by_volume = sorted(range(len(cartons)), key=lambda i: cartons[i].volume)
 
     while remaining:
         window, rest = remaining[:CHUNK], remaining[CHUNK:]
+        # Carton types that cannot hold a single item in the window are not
+        # worth filling: the result is always empty. With a window of mostly
+        # large items this skips the small cartons outright.
+        usable = {idx for item in window
+                  for idx in table[(item.dims, item.allowed_rotations)]}
         best: tuple[PackedCarton, list[Item]] | None = None
         best_key: tuple[int, int] | None = None
-        for carton in by_volume:
+        for ci in by_volume:
+            if ci not in usable:
+                continue
+            carton = cartons[ci]
             pc, left = fill_carton(carton, window)
             if not pc.placements:
                 continue
@@ -215,6 +306,53 @@ def pack_one(ordering: Sequence[Item], cartons: Sequence[Carton]
         out.append(pc)
         remaining = left + rest
     return out, remaining
+
+
+def carton_fit_table(items: Sequence[Item], cartons: Sequence[Carton]
+                     ) -> dict[tuple, tuple[int, ...]]:
+    """Per item SHAPE, which carton types could hold it if they were empty.
+
+    Keyed by (dims, allowed_rotations), which is everything that decides the
+    answer, so a 1000-item order over 40 distinct SKUs does 40 tests rather
+    than 1000. The value is carton indices, in the caller's order.
+
+    Two uses, both pure speed: skip carton types an item can never fit, and
+    identify items that fit nothing before any geometry runs.
+    """
+    table: dict[tuple, tuple[int, ...]] = {}
+    for item in items:
+        key = (item.dims, item.allowed_rotations)
+        if key not in table:
+            table[key] = tuple(i for i, c in enumerate(cartons)
+                               if fits_empty_carton(item, c))
+    return table
+
+
+def _fits_some_carton(item: Item, cartons: Sequence[Carton],
+                      table: dict[tuple, tuple[int, ...]]) -> bool:
+    """Is there a carton this item could go in, on both geometry and mass?
+
+    Mass is checked here rather than in the shape table because two items of
+    the same shape can have different masses.
+    """
+    for idx in table[(item.dims, item.allowed_rotations)]:
+        limit = cartons[idx].max_contents_mass
+        if limit is None or item.mass <= limit:
+            return True
+    return False
+
+
+def _reject_message(item: Item, cartons: Sequence[Carton],
+                    table: dict[tuple, tuple[int, ...]]) -> str:
+    """Why this item could not be packed, in the packer's terms.
+
+    An item that fits but is too heavy told "exceeds every carton in all
+    permitted orientations" sends a packer looking for a bigger box, which is
+    not the problem. The two causes need different words.
+    """
+    if table[(item.dims, item.allowed_rotations)]:
+        return "Fits geometrically, but exceeds the mass limit of every carton"
+    return "Exceeds every carton in all permitted orientations"
 
 
 def pack(items: Sequence[Item], cartons: Sequence[Carton],
@@ -232,17 +370,27 @@ def pack(items: Sequence[Item], cartons: Sequence[Carton],
     clock-dependent decision would make the layout differ between runs.
     """
     t0 = time.monotonic()
+    table = carton_fit_table(items, cartons)
+
+    # Items no carton can ever hold are rejected before packing, not
+    # discovered during it. Left in, a CHUNK-sized run of them fills
+    # pack_one's window, packs nothing, and takes every placeable item behind
+    # them down as a false rejection.
+    packable: list[Item] = []
+    all_unplaced: list[Item] = []
+    for item in items:
+        (packable if _fits_some_carton(item, cartons, table)
+         else all_unplaced).append(item)
 
     all_cartons: list[PackedCarton] = []
-    all_unplaced: list[Item] = []
-    for group in split_compatible(items):
+    for group in split_compatible(packable):
         ordering = sorted(group, key=lambda i: i.volume, reverse=True)
-        packed, unplaced = pack_one(ordering, cartons)
+        packed, unplaced = pack_one(ordering, cartons, table)
         all_cartons.extend(packed)
         all_unplaced.extend(unplaced)
 
     rejects = [Reject(item_ref=i.ref, reason_code="NO_FITTING_CARTON",
-                      message="Exceeds every carton in all permitted orientations")
+                      message=_reject_message(i, cartons, table))
                for i in all_unplaced]
     return Solution(cartons=all_cartons, rejects=rejects, seed=seed,
                     time_budget_ms=time_budget_ms,
