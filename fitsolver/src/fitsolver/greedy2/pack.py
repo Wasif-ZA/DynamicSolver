@@ -1,6 +1,6 @@
-"""greedy2's solver. Phase 1 is a faithful copy of v1's three functions.
+"""greedy2's solver.
 
-    place(item, carton, placed)  -> first feasible Placement, or None
+    place(item, state)           -> first feasible Placement, or None
     fill_carton(carton, items)   -> greedily fill one carton
     pack(items, cartons)         -> choose cartons until everything is placed
 
@@ -9,22 +9,23 @@ total carton volume. Fill rate is deliberately NOT optimised. Maximising fill
 rewards many small tight cartons, the opposite of the client's "reduce the
 number of boxes required". Fill is reported, not chased.
 
-WHY THIS STARTS AS A COPY. Phase 1's whole job is to prove the scaffold: the
-new package, the algorithm selection in engine.py, and the parametrized
-property tests. If greedy2 both moved into a new package and changed
-behaviour in one step, a wrong layout later could not be attributed to either.
-So Phase 1 is measured on being identical, and tests/test_greedy2_scaffold.py
-asserts exactly that. That test is removed in Phase 2, when greedy2 is
-supposed to diverge.
+PHASE 2, the change that made greedy2 worth having. v1 stopped stacking, and
+the cause was candidate generation rather than anything in the packing logic:
 
-KNOWN LIMITS INHERITED FROM v1, and the phase that addresses each:
+  - v1 keeps corner points that lie inside placed items, and points on or
+    beyond the carton walls. Nothing can ever be placed at either.
+  - the list is sorted bottom-first and then cut to MAX_CANDIDATES, so those
+    dead low points crowd out the live high ones. Measured on W1: half of
+    every scan was dead, and the cut discarded live points in a quarter of all
+    placement attempts.
 
-    Phase 2  candidates() returns dead points: positions inside placed items
-             and on or beyond the carton walls. Sorting bottom-first and then
-             capping at MAX_CANDIDATES means those dead low points crowd out
-             live high points, so the solver stops stacking. Measured on the
-             W1 benchmark: 50% of the points scanned are dead, and the cap
-             discards live points in 25% of placement attempts.
+So greedy2 drops dead points (geometry.is_live), and holds the survivors in a
+per-carton CartonState updated incrementally rather than rebuilt inside every
+placement attempt. Both halves matter: pruning is what recovers the stacking,
+and the cache is what stops pruning from costing more than it saves.
+
+STILL TO DO, and the phase that addresses each:
+
     Phase 3  no boundary pre-checks and no memo of positions already known to
              be infeasible, so the same hopeless test is repeated.
     Phase 4  one item ordering only (volume descending). No single ordering
@@ -33,18 +34,26 @@ KNOWN LIMITS INHERITED FROM v1, and the phase that addresses each:
 
 v1 also has an up-front filter for items no carton can ever hold. This copy is
 taken from algo-test's v1, which does not have it, so greedy2 does not have it
-in Phase 1 either. It arrives in Phase 3, whose first step is exactly that
-check, done per carton type.
+yet. It arrives in Phase 3, whose first step is exactly that check, done per
+carton type.
 """
 from __future__ import annotations
 
 import time
+from bisect import insort
 from collections.abc import Sequence
 
 from ..domain import Carton, Item, PackedCarton, Placement, Reject, Solution
-from .geometry import candidates, fits, orientations
+from .geometry import covered_by, fits, is_live, orientations, point_sort_key
 
-MAX_CANDIDATES = 64   # corner points considered per placement
+# Corner points considered per placement. None means no cap.
+#
+# The cap exists to bound the scan, not to choose between points. In v1 it did
+# both, badly: half the list was dead points, so a cap of 64 often meant fewer
+# than 32 real options, and the live high points that would have continued a
+# stack were the ones pushed out. With dead points gone, 64 is 64.
+MAX_CANDIDATES = 64
+
 CHUNK = 120           # items offered to each carton; bounds n^2 growth
 
 
@@ -72,41 +81,100 @@ def split_compatible(items: Sequence[Item]) -> list[list[Item]]:
     return groups
 
 
-def place(item: Item, carton: Carton, placed: list[Placement],
-          contents_mass: int) -> Placement | None:
-    """First feasible placement, scanning corner points bottom-left-first.
+class CartonState:
+    """One carton being filled: its placements, its mass, its live points.
 
-    Candidates are pre-sorted by (z, y, x), so first-fit is already the
+    WHY THIS EXISTS. v1 rebuilds the whole candidate list inside every single
+    placement attempt, walking every placed item to regenerate corners that
+    have not changed. This keeps the list and updates it in place, which is
+    correct only because deadness is permanent: free space never grows, so a
+    point that nothing can start at stays that way (see geometry.is_live).
+
+    It is a plain object created per carton in fill_carton, deliberately not a
+    module-level dict keyed by id(). Two cartons packed in the same run would
+    share such a dict, ids get recycled after garbage collection, and the
+    lifetime of the entry would have nothing to do with the lifetime of the
+    carton. That is a cache that goes wrong silently and intermittently.
+
+    `points` is kept sorted bottom-first at all times, so place() can slice the
+    front of it without sorting.
+    """
+
+    __slots__ = ("carton", "placements", "contents_mass", "points")
+
+    def __init__(self, carton: Carton) -> None:
+        self.carton = carton
+        self.placements: list[Placement] = []
+        self.contents_mass = 0
+        self.points: list[tuple[int, int, int]] = []
+        self._offer((0, 0, 0))
+
+    def _offer(self, pt: tuple[int, int, int]) -> None:
+        """Add a point, if it is live and not already held."""
+        if pt not in self.points and is_live(pt, self.carton, self.placements):
+            insort(self.points, pt, key=point_sort_key)
+
+    def add(self, placement: Placement) -> None:
+        """Record a placement and bring the live set up to date.
+
+        Two steps: drop every point the new item now covers, then offer the
+        new item's three exposed corners.
+
+        Each corner is liveness-checked against every item placed so far,
+        because a corner of this item can land inside an item placed earlier
+        and must not enter the list. It does not need checking against this
+        item: containment is half-open, so a box never covers its own exposed
+        corners. That is also why the two steps commute, and why neither the
+        order of the steps nor the position of the append below is
+        load-bearing.
+        """
+        x, y, z = placement.pos
+        w, d, h = placement.dims
+        self.points = [q for q in self.points
+                       if not covered_by(q, placement.pos, placement.dims)]
+        self.placements.append(placement)
+        self.contents_mass += placement.item.mass
+        for corner in ((x + w, y, z), (x, y + d, z), (x, y, z + h)):
+            self._offer(corner)
+
+    def packed(self) -> PackedCarton:
+        return PackedCarton(carton=self.carton, placements=self.placements)
+
+
+def place(item: Item, state: CartonState) -> Placement | None:
+    """First feasible placement, scanning live corner points bottom-first.
+
+    Points are pre-sorted by (z, y, x), so first-fit is already the
     gravity-sensible choice. Whether scoring them by contact area instead is
     worth anything is re-tested in Phase 6: v1's ablation said no, but it ran
     while the candidate cap was discarding live points, so the result is not
     trustworthy.
     """
+    carton = state.carton
     if (carton.max_contents_mass is not None
-            and contents_mass + item.mass > carton.max_contents_mass):
+            and state.contents_mass + item.mass > carton.max_contents_mass):
         return None
-    for pos in candidates(placed, carton)[:MAX_CANDIDATES]:
+    for pos in state.points[:MAX_CANDIDATES]:
         for orient_idx, dims in orientations(item):
-            if fits(pos, dims, carton, placed):
+            if fits(pos, dims, carton, state.placements):
                 return Placement(item=item, pos=pos, dims=dims,
-                                 orientation=orient_idx, sequence=len(placed))
+                                 orientation=orient_idx,
+                                 sequence=len(state.placements))
     return None
 
 
 def fill_carton(carton: Carton, items: Sequence[Item]
                 ) -> tuple[PackedCarton, list[Item]]:
     """Greedily place items, in the given order, into one carton."""
-    pc = PackedCarton(carton=carton)
-    mass = 0
+    state = CartonState(carton)
     left: list[Item] = []
     for item in items:
-        p = place(item, carton, pc.placements, mass)
+        p = place(item, state)
         if p is None:
             left.append(item)
         else:
-            pc.placements.append(p)
-            mass += item.mass
-    return pc, left
+            state.add(p)
+    return state.packed(), left
 
 
 def pack_one(ordering: Sequence[Item], cartons: Sequence[Carton]

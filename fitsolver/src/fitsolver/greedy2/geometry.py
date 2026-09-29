@@ -5,9 +5,9 @@ rather than imported. v1's geometry.py is frozen, so copying is what lets
 greedy2 change candidate generation in later phases without any risk of
 altering v1's output.
 
-Phase 1 keeps the copy faithful: same corner-point candidate generation, same
-support rule, same orientation table, so greedy2 lays items out exactly as v1
-does. The comments are rewritten, the arithmetic is not.
+Phase 2 changes one thing here: candidate points that nothing can ever be
+placed at are no longer returned. Orientation, overlap and support are still
+v1's, unchanged.
 """
 from __future__ import annotations
 
@@ -94,15 +94,59 @@ def supported(pos: tuple[int, int, int], dims: tuple[int, int, int],
     return _support_area(pos, dims, placed) * 100 >= base * min_ratio_pct
 
 
+def point_sort_key(pt: tuple[int, int, int]) -> tuple[int, int, int]:
+    """Bottom-first ordering: z, then y, then x.
+
+    Gravity-sensible positions are tried first, which is what makes plain
+    first-fit produce stable, human-packable layouts without any scoring.
+    """
+    return (pt[2], pt[1], pt[0])
+
+
+def covered_by(pt: tuple[int, int, int], pos: tuple[int, int, int],
+               dims: tuple[int, int, int]) -> bool:
+    """Does a box occupy this point, so that nothing can ever start here?
+
+    Half-open on every axis: `pos <= q < pos + dims`. The far face is excluded
+    because a point exactly on the top or far side of a box is the position
+    where the NEXT box starts, which is the whole basis of corner-point
+    packing. Getting this bound wrong would delete the stacking positions.
+    """
+    return all(pos[a] <= pt[a] < pos[a] + dims[a] for a in range(3))
+
+
+def is_live(pt: tuple[int, int, int], carton: Carton,
+            placed: list[Placement]) -> bool:
+    """Could any item ever start at this point?
+
+    Two ways to be dead, and both are permanent, because placed items are
+    never removed and the carton never grows:
+
+      1. on or beyond a wall. x == W is outside the carton, not flush with it:
+         flush means x + w == W, which is a different point.
+      2. inside a placed item.
+
+    Permanence is what makes the incremental cache in pack.py correct. A point
+    this returns False for can be deleted and never reconsidered.
+    """
+    if any(pt[a] >= carton.inner_dims[a] for a in range(3)):
+        return False
+    return not any(covered_by(pt, p.pos, p.dims) for p in placed)
+
+
 def candidates(placed: list[Placement], carton: Carton) -> list[tuple[int, int, int]]:
-    """Corner points: origin plus the three exposed corners of every placement.
+    """Every live corner point, rebuilt from scratch, bottom-first.
 
-    Sorted bottom-first (z, then y, then x) so gravity-sensible positions are
-    tried first and the greedy pass produces stable, human-packable layouts.
+    THIS IS THE SLOW PATH and pack.py does not use it. CartonState maintains
+    the same list incrementally. It is kept because it is an obviously correct
+    definition of what that cache is supposed to contain, and the tests check
+    the cache against it after every placement.
 
-    Phase 1 keeps v1's behaviour exactly, including the fact that points
-    inside placed items and points on or beyond the carton walls are still
-    returned. Phase 2 is where that gets fixed.
+    The difference from v1: v1 returns dead points too. Sorted bottom-first
+    and then capped, those dead low points crowd out the live high ones, so
+    the solver stops stacking. Measured on the W1 benchmark, half of every
+    scan was dead points, and the cap discarded live points in a quarter of
+    all placement attempts.
     """
     pts: set[tuple[int, int, int]] = {(0, 0, 0)}
     for p in placed:
@@ -111,7 +155,7 @@ def candidates(placed: list[Placement], carton: Carton) -> list[tuple[int, int, 
         pts.add((x + w, y, z))
         pts.add((x, y + d, z))
         pts.add((x, y, z + h))
-    return sorted(pts, key=lambda t: (t[2], t[1], t[0]))
+    return sorted((q for q in pts if is_live(q, carton, placed)), key=point_sort_key)
 
 
 def fits(pos: tuple[int, int, int], dims: tuple[int, int, int],
