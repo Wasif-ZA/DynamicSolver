@@ -24,18 +24,40 @@ per-carton CartonState updated incrementally rather than rebuilt inside every
 placement attempt. Both halves matter: pruning is what recovers the stacking,
 and the cache is what stops pruning from costing more than it saves.
 
+PHASE 6, contact-area scoring: measured again, and rejected again. v1's
+docstring says an ablation found zero gain, but that ablation ran while
+candidate generation was keeping dead points and capping the list at 64, so a
+scoring function was being judged on a candidate set too broken to stack. It
+deserved re-testing on the phase 5 solver.
+
+The re-test says the old conclusion was right, and for a firmer reason than
+"no gain": scoring is actively worse. Cartons, off against on, at the 1200 ms
+budget:
+
+    geometry-bound   W1 20 -> 21   W2 21 -> 25   W3 46 -> 48   W4 28 -> 28
+    mass-limited     W1 53 -> 53   W2 55 -> 54   W3 87 -> 87   W4 32 -> 33
+
+One workload improves, W2 with mass limits, by a single carton. Four get
+worse, and every pass costs 1.5x to 5x more time. The rule for this phase was
+"on only if it improves at least one workload and makes none worse", so it
+stays off.
+
+Why it loses is worth recording, because it is not obvious. Maximising shared
+face area is a local measure: it wedges each item against what is already
+there, and in doing so it breaks the bottom-left-first discipline that keeps
+the remaining free space in one large usable block. First-fit over
+bottom-first points is not a weaker heuristic than scoring here, it is a
+different and better one, because the ordering of the candidate list is already
+doing the work that the score was meant to do.
+
+The flag and bench/ablate_contact.py stay, so the next person to wonder can
+re-run it in one command rather than rebuilding it.
+
 STILL TO DO, and the phase that addresses each:
 
-    Phase 3  no boundary pre-checks and no memo of positions already known to
-             be infeasible, so the same hopeless test is repeated.
-    Phase 4  one item ordering only (volume descending). No single ordering
-             wins on every workload.
-    Phase 5  split_compatible is quadratic in the item count.
-
-v1 also has an up-front filter for items no carton can ever hold. This copy is
-taken from algo-test's v1, which does not have it, so greedy2 does not have it
-yet. It arrives in Phase 3, whose first step is exactly that check, done per
-carton type.
+    Phase 8  corner points strand space that Empty Maximal Spaces would not,
+             and the fit test still scans placed items rather than comparing
+             three dimensions.
 """
 from __future__ import annotations
 
@@ -45,6 +67,7 @@ from collections.abc import Sequence
 
 from ..domain import Carton, Item, PackedCarton, Placement, Reject, Solution
 from .geometry import (
+    contact_area,
     covered_by,
     fits_empty_carton,
     inside,
@@ -90,6 +113,12 @@ MAX_CANDIDATES = 128
 # Nothing under 240 items is affected, which is every order that fits inside
 # the synchronous budget, so this is a batch-path decision only.
 CHUNK = 240
+
+# Score candidate positions by contact area instead of taking the first that
+# fits. OFF, on the evidence in bench/ablate_contact.py: see the module
+# docstring. Flip it, or pass --contact-scoring to compare_algorithms.py, to
+# re-run that comparison.
+CONTACT_SCORING = False
 
 
 def conflict(a: Item, b: Item) -> bool:
@@ -259,10 +288,11 @@ def place(item: Item, state: CartonState) -> Placement | None:
     """First feasible placement, scanning live corner points bottom-first.
 
     Points are pre-sorted by (z, y, x), so first-fit is already the
-    gravity-sensible choice. Whether scoring them by contact area instead is
-    worth anything is re-tested in Phase 6: v1's ablation said no, but it ran
-    while the candidate cap was discarding live points, so the result is not
-    trustworthy.
+    gravity-sensible choice: no scoring is needed to prefer a low position.
+
+    With CONTACT_SCORING on, every workable position and orientation is
+    evaluated and the one sharing the most face area wins, ties going to the
+    earliest and therefore lowest. Measured, and off: see the module docstring.
     """
     carton = state.carton
     if (carton.max_contents_mass is not None
@@ -270,6 +300,8 @@ def place(item: Item, state: CartonState) -> Placement | None:
         return None
 
     shape = (item.dims, item.allowed_rotations)
+    best: Placement | None = None
+    best_score = -1
     for pos in state.points[:MAX_CANDIDATES]:
         memo_key = (pos, *shape)
         if memo_key in state.infeasible:
@@ -294,16 +326,25 @@ def place(item: Item, state: CartonState) -> Placement | None:
             if not supported(pos, dims, state.placements):
                 support_blocked = True
                 continue
-            return Placement(item=item, pos=pos, dims=dims,
-                             orientation=orient_idx,
-                             sequence=len(state.placements))
+            candidate = Placement(item=item, pos=pos, dims=dims,
+                                  orientation=orient_idx,
+                                  sequence=len(state.placements))
+            if not CONTACT_SCORING:
+                return candidate
+            score = contact_area(pos, dims, carton, state.placements)
+            if best is None or score > best_score:
+                best, best_score = candidate, score
 
         if not support_blocked:
             # Every orientation was out of bounds or hit a placed item, and
             # neither can come undone: the carton never grows and items are
             # never removed. So this shape can never be placed here again.
             state.infeasible.add(memo_key)
-    return None
+
+    # Only reached with scoring on, where every candidate is evaluated rather
+    # than the first workable one taken. Ties keep the earliest, and points
+    # arrive bottom-first, so an equal score still prefers the lower position.
+    return best
 
 
 def smallest_dim_suffixes(items: Sequence[Item]) -> list[int]:

@@ -208,6 +208,53 @@ def candidates(placed: list[Placement], carton: Carton) -> list[tuple[int, int, 
     return sorted((q for q in pts if is_live(q, carton, placed)), key=point_sort_key)
 
 
+def contact_area(pos: tuple[int, int, int], dims: tuple[int, int, int],
+                 carton: Carton, placed: list[Placement]) -> int:
+    """Total face area this box would share with walls, the floor and neighbours.
+
+    The classic "maximum touching area" score: a box wedged against things is
+    a box that has not stranded space behind it. All six walls count, not just
+    the floor, because the score is about how tightly the volume is used, not
+    about stability, which the support rule already enforces separately.
+
+    Two boxes touch on an axis when their intervals on that axis meet exactly,
+    and the shared area is then the product of their overlaps on the other two.
+    All integer arithmetic, and exact: no epsilon, so a 1 mm gap scores zero
+    rather than nearly-touching.
+    """
+    x, y, z = pos
+    w, d, h = dims
+    inner_w, inner_d, inner_h = carton.inner_dims
+
+    area = 0
+    if x == 0:
+        area += d * h
+    if x + w == inner_w:
+        area += d * h
+    if y == 0:
+        area += w * h
+    if y + d == inner_d:
+        area += w * h
+    if z == 0:
+        area += w * d
+    if z + h == inner_h:
+        area += w * d
+
+    for p in placed:
+        px, py, pz = p.pos
+        pw, pd, ph = p.dims
+        ox = min(x + w, px + pw) - max(x, px)
+        oy = min(y + d, py + pd) - max(y, py)
+        oz = min(z + h, pz + ph) - max(z, pz)
+        if oy > 0 and oz > 0 and (x + w == px or px + pw == x):
+            area += oy * oz
+        if ox > 0 and oz > 0 and (y + d == py or py + pd == y):
+            area += ox * oz
+        if ox > 0 and oy > 0 and (z + h == pz or pz + ph == z):
+            area += ox * oy
+    return area
+
+
 def fits(pos: tuple[int, int, int], dims: tuple[int, int, int],
          carton: Carton, placed: list[Placement]) -> bool:
     """Inside the carton, clear of every placed item, and adequately supported."""
