@@ -1,66 +1,20 @@
-"""greedy2's solver.
+"""greedy2's solver: a greedy corner-point packer with multi-start and a
+carton elimination post-pass.
 
-    place(item, state)           -> first feasible Placement, or None
-    fill_carton(carton, items)   -> greedily fill one carton
-    pack(items, cartons)         -> choose cartons until everything is placed
+    place(item, state)          -> first feasible Placement, or None
+    fill_carton(carton, items)  -> greedily fill one carton
+    pack(items, cartons, ...)   -> the full solve
 
-Objective is LEXICOGRAPHIC: fewest unplaced, then fewest cartons, then least
-total carton volume. Fill rate is deliberately NOT optimised. Maximising fill
-rewards many small tight cartons, the opposite of the client's "reduce the
-number of boxes required". Fill is reported, not chased.
+Objective, lexicographic: fewest unplaced items, then fewest cartons, then
+least total carton volume. Fill rate is reported but never optimised.
 
-PHASE 2, the change that made greedy2 worth having. v1 stopped stacking, and
-the cause was candidate generation rather than anything in the packing logic:
-
-  - v1 keeps corner points that lie inside placed items, and points on or
-    beyond the carton walls. Nothing can ever be placed at either.
-  - the list is sorted bottom-first and then cut to MAX_CANDIDATES, so those
-    dead low points crowd out the live high ones. Measured on W1: half of
-    every scan was dead, and the cut discarded live points in a quarter of all
-    placement attempts.
-
-So greedy2 drops dead points (geometry.is_live), and holds the survivors in a
-per-carton CartonState updated incrementally rather than rebuilt inside every
-placement attempt. Both halves matter: pruning is what recovers the stacking,
-and the cache is what stops pruning from costing more than it saves.
-
-PHASE 6, contact-area scoring: measured again, and rejected again. v1's
-docstring says an ablation found zero gain, but that ablation ran while
-candidate generation was keeping dead points and capping the list at 64, so a
-scoring function was being judged on a candidate set too broken to stack. It
-deserved re-testing on the phase 5 solver.
-
-The re-test says the old conclusion was right, and for a firmer reason than
-"no gain": scoring is actively worse. Cartons, off against on, at the 1200 ms
-budget:
-
-    geometry-bound   W1 20 -> 21   W2 21 -> 25   W3 46 -> 48   W4 28 -> 28
-    mass-limited     W1 53 -> 53   W2 55 -> 54   W3 87 -> 87   W4 32 -> 33
-
-One workload improves, W2 with mass limits, by a single carton. Four get
-worse, and every pass costs 1.5x to 5x more time. The rule for this phase was
-"on only if it improves at least one workload and makes none worse", so it
-stays off.
-
-Why it loses is worth recording, because it is not obvious. Maximising shared
-face area is a local measure: it wedges each item against what is already
-there, and in doing so it breaks the bottom-left-first discipline that keeps
-the remaining free space in one large usable block. First-fit over
-bottom-first points is not a weaker heuristic than scoring here, it is a
-different and better one, because the ordering of the candidate list is already
-doing the work that the score was meant to do.
-
-The flag and bench/ablate_contact.py stay, so the next person to wonder can
-re-run it in one command rather than rebuilding it.
-
-STILL TO DO, and the phase that addresses each:
-
-    Phase 8  corner points strand space that Empty Maximal Spaces would not,
-             and the fit test still scans placed items rather than comparing
-             three dimensions.
+Why each design choice was made, what was measured, and what was tried and
+rejected is in DESIGN_NOTES.md in this folder. Comments here only explain
+what the code does and the rules it must not break.
 """
 from __future__ import annotations
 
+import random
 import time
 from bisect import insort
 from collections.abc import Sequence
@@ -80,56 +34,73 @@ from .geometry import (
     supported,
 )
 
-# Corner points considered per placement. None means no cap.
-#
-# The cap exists to bound the scan, not to choose between points. In v1 it did
-# both, badly: half the list was dead points, so a cap of 64 often meant fewer
-# than 32 real options, and the live high points that would have continued a
-# stack were the ones pushed out. With dead points gone, 64 is 64.
-#
-# Swept at 64, 128 and uncapped once pruning was in. 128 and uncapped give
-# identical layouts, which matches the measured maximum of 118 live points, so
-# at 128 this is a safety bound rather than a choice between points. It is
-# worth 2 cartons on W1 against 64 (25 rather than 27) for about 9 percent
-# more time, and changes nothing on W2, W3 or W4.
+# --------------------------------------------------------------------------- #
+# Tuning constants. Each value was measured; see DESIGN_NOTES.md section 4.
+# --------------------------------------------------------------------------- #
+
+# Corner points considered per placement. A safety bound, not a choice: the
+# most live points ever measured in one carton is 118.
 MAX_CANDIDATES = 128
 
-# Items offered to each carton per round. Bounds n^2 growth: without it, cost
-# grows about n^1.6 and a 1600-item order takes 11 s.
-#
-# Re-measured in phase 5, now that placement is much cheaper than it was when
-# 120 was chosen. Geometry-bound, 1200 ms budget, cartons and wall time:
-#
-#     CHUNK       W1            W2           W3          W4
-#       120   21 / 3.66 s   21 / 0.39 s   46 / 1.32   28 / 0.12
-#       240   20 / 7.06 s   21 / 0.74 s   46 / 1.33   28 / 0.13
-#      none   20 / 17.04 s  20 / 1.29 s   46 / 1.35   28 / 0.12
-#
-# 240 it is. It matches no chunking at all on W1, the hardest workload, for a
-# quarter of the time, and it is a carton better there than 120. Dropping
-# chunking entirely buys one further carton on W2 and costs 2.4x on W1, which
-# is not a trade worth making.
-#
-# Nothing under 240 items is affected, which is every order that fits inside
-# the synchronous budget, so this is a batch-path decision only.
+# Items offered to each carton per round. Bounds the quadratic cost of very
+# large orders; has no effect below 240 items.
 CHUNK = 240
 
-# Score candidate positions by contact area instead of taking the first that
-# fits. OFF, on the evidence in bench/ablate_contact.py: see the module
-# docstring. Flip it, or pass --contact-scoring to compare_algorithms.py, to
-# re-run that comparison.
+# Score positions by contact area instead of taking the first fit. Measured
+# worse, so OFF. Kept so bench/ablate_contact.py can re-run the comparison.
 CONTACT_SCORING = False
 
+# Carton elimination post-pass. The flags exist only so
+# bench/ablate_phase12.py can switch each half off; production leaves all on.
+ELIMINATE = True
+ELIMINATE_EMPTY = True
+ELIMINATE_REPACK = True
+
+# Emptying: cartons tried as the victim per round, and total attempts.
+ELIMINATE_VICTIMS = 3
+ELIMINATE_ATTEMPTS = 8
+
+# Repacking: the last 2 cartons into 1, then the last 3 into 2.
+REPACK_SPANS = (2, 3)
+
+# Repacking only runs when the cartons it would merge hold at most this many
+# items. A cost bound: no carton count changes anywhere in the measured range.
+REPACK_MAX_ITEMS = 40
+
+# Above this many items, a different ordering is tried first.
+LARGE_ORDER_ITEMS = 250
+
+# Seeded restarts pick each next item from the first RESTART_WINDOW items
+# still unclaimed in volume order. 1 would reproduce the volume ordering.
+RESTART_WINDOW = 2
+
+# Ceiling on passes per solve. A safety bound only: the budget divided by
+# PASS_COST_MS is the real limit, and more passes can never make the result
+# worse, because the best pass is kept.
+MAX_PASSES = 64
+
+# Measured cost of ONE pass, as (up to this many items, milliseconds), from
+# bench/calibrate_passes.py using the slowest ordering. A fixed table rather
+# than a clock, so the number of passes never depends on machine load.
+PASS_COST_MS: tuple[tuple[int, int], ...] = (
+    (25, 15), (50, 50), (100, 205), (200, 620), (300, 1300),
+    (500, 2450), (750, 4100), (1000, 5600),
+)
+
+# Past the table, cost is extrapolated from the last row.
+_LAST_N, _LAST_MS = PASS_COST_MS[-1]
+
+
+# --------------------------------------------------------------------------- #
+# Conflict groups: DG segregation and incompatibility, before any geometry.
+# --------------------------------------------------------------------------- #
 
 def conflict(a: Item, b: Item) -> bool:
     """Can these two never share a carton?
 
-    An edge means an explicit incompatibility either way round, or two
-    differing dangerous-goods classes. An unset dg_class conflicts with
-    nothing: it is "not regulated", not "a class of its own".
-
-    Kept as the readable definition of the rule. split_compatible no longer
-    calls it per pair, but the tests check the fast path against it.
+    True for an explicit incompatibility either way round, or two different
+    dangerous-goods classes. An unset dg_class conflicts with nothing. This is
+    the readable reference definition; the tests check the fast path against it.
     """
     if b.ref in a.incompatible_with or a.ref in b.incompatible_with:
         return True
@@ -137,14 +108,14 @@ def conflict(a: Item, b: Item) -> bool:
 
 
 class _Group:
-    """One colour class, plus the indexes that make joining it a set lookup."""
+    """One conflict group, with summaries that make admission a set lookup."""
 
     __slots__ = ("items", "dg", "member_refs", "barred_refs")
 
     def __init__(self) -> None:
         self.items: list[Item] = []
-        # At most one non-None dg_class can ever be present, since two
-        # differing classes conflict. None means "nothing regulated yet".
+        # The one regulated class present, if any. Two differing classes
+        # conflict, so a group can never hold more than one.
         self.dg: str | None = None
         self.member_refs: set[str] = set()
         # Every ref any member refuses to share with.
@@ -168,30 +139,10 @@ class _Group:
 
 
 def split_compatible(items: Sequence[Item]) -> list[list[Item]]:
-    """Greedy colouring over the conflict graph.
+    """Greedy colouring of the conflict graph. Each group packs independently.
 
-    Each colour class packs independently. This is how DG segregation,
-    incompatibility and customer rules are enforced, before any geometry runs,
-    so the geometry stays constraint-free.
-
-    Same colouring as the obvious version, which tests every pair, but not the
-    same cost. That version asks "does this item conflict with ANY member",
-    walking the whole group, so a 1000-item order with no constraints at all
-    still does half a million comparisons to build its single group.
-
-    Here each group carries three summaries instead:
-
-      dg           the one regulated class present, if any. Two differing
-                   classes conflict, so a group can never hold more than one.
-      member_refs  what is in the group, to test against the item's own
-                   incompatible_with.
-      barred_refs  everything the members refuse, to test the item's ref
-                   against.
-
-    So admission is a set lookup rather than a scan, and an item with no
-    incompatible_with entries, which is nearly all of them, costs O(1). Groups
-    are still visited in creation order and the first that admits the item
-    takes it, so the colouring is identical.
+    Each item joins the first group that admits it, so the result is the same
+    as testing every pair, but in linear rather than quadratic time.
     """
     groups: list[_Group] = []
     for item in items:
@@ -206,23 +157,20 @@ def split_compatible(items: Sequence[Item]) -> list[list[Item]]:
     return [g.items for g in groups]
 
 
+# --------------------------------------------------------------------------- #
+# One carton: live corner points and first-fit placement.
+# --------------------------------------------------------------------------- #
+
 class CartonState:
     """One carton being filled: its placements, its mass, its live points.
 
-    WHY THIS EXISTS. v1 rebuilds the whole candidate list inside every single
-    placement attempt, walking every placed item to regenerate corners that
-    have not changed. This keeps the list and updates it in place, which is
-    correct only because deadness is permanent: free space never grows, so a
-    point that nothing can start at stays that way (see geometry.is_live).
+    The live point list is updated in place after each placement instead of
+    being rebuilt. That is only correct because a dead point stays dead: free
+    space never grows (see geometry.is_live). `points` is always kept sorted
+    bottom-first, so place() can scan it from the front.
 
-    It is a plain object created per carton in fill_carton, deliberately not a
-    module-level dict keyed by id(). Two cartons packed in the same run would
-    share such a dict, ids get recycled after garbage collection, and the
-    lifetime of the entry would have nothing to do with the lifetime of the
-    carton. That is a cache that goes wrong silently and intermittently.
-
-    `points` is kept sorted bottom-first at all times, so place() can slice the
-    front of it without sorting.
+    Created per carton. Never cache this in a module-level dict keyed by id():
+    ids are recycled after garbage collection.
     """
 
     __slots__ = ("carton", "placements", "contents_mass", "points", "infeasible")
@@ -243,18 +191,10 @@ class CartonState:
             insort(self.points, pt, key=point_sort_key)
 
     def add(self, placement: Placement) -> None:
-        """Record a placement and bring the live set up to date.
+        """Record a placement: drop the points it covers, offer its 3 corners.
 
-        Two steps: drop every point the new item now covers, then offer the
-        new item's three exposed corners.
-
-        Each corner is liveness-checked against every item placed so far,
-        because a corner of this item can land inside an item placed earlier
-        and must not enter the list. It does not need checking against this
-        item: containment is half-open, so a box never covers its own exposed
-        corners. That is also why the two steps commute, and why neither the
-        order of the steps nor the position of the append below is
-        load-bearing.
+        Containment is half-open, so a box never covers its own exposed
+        corners, and the order of the two steps does not matter.
         """
         x, y, z = placement.pos
         w, d, h = placement.dims
@@ -266,16 +206,11 @@ class CartonState:
             self._offer(corner)
 
     def drop_points_too_small_for(self, smallest_item_dim: int) -> None:
-        """Forget points whose room is narrower than the smallest item left.
+        """Forget points whose room is narrower than every remaining item.
 
-        The room at a point only shrinks, and the items still to come only get
-        smaller under a descending sort, so a point too tight for every
-        remaining item is finished. Dropping it keeps later scans short.
-
-        This cannot change any placement: a point is removed only when no
-        remaining item could occupy it in any orientation, since an item needs
-        its own smallest dimension to fit in the room's smallest dimension
-        whichever way it is turned.
+        `smallest_item_dim` must be the SUFFIX MINIMUM over the items still to
+        come, not the next item's smallest side, because some orderings put a
+        thin item before a fat one. Cannot change any placement.
         """
         self.points = [q for q in self.points
                        if min(room_at(q, self.carton)) >= smallest_item_dim]
@@ -287,12 +222,9 @@ class CartonState:
 def place(item: Item, state: CartonState) -> Placement | None:
     """First feasible placement, scanning live corner points bottom-first.
 
-    Points are pre-sorted by (z, y, x), so first-fit is already the
-    gravity-sensible choice: no scoring is needed to prefer a low position.
-
-    With CONTACT_SCORING on, every workable position and orientation is
-    evaluated and the one sharing the most face area wins, ties going to the
-    earliest and therefore lowest. Measured, and off: see the module docstring.
+    Points are sorted by (z, y, x), so first-fit already prefers the lowest
+    position. With CONTACT_SCORING on, the position sharing the most face area
+    wins instead, ties going to the lowest.
     """
     carton = state.carton
     if (carton.max_contents_mass is not None
@@ -307,16 +239,13 @@ def place(item: Item, state: CartonState) -> Placement | None:
         if memo_key in state.infeasible:
             continue
 
-        # O(1) exact pre-check: is there room here for any orientation at all?
+        # Exact O(1) check: is there room here for any orientation at all?
         if not room_admits(item, room_at(pos, carton)):
             state.infeasible.add(memo_key)
             continue
 
-        # Whether any orientation got as far as failing ONLY on support. That
-        # failure is not permanent: a later item can become this one's floor,
-        # so the point must stay open for retry. Memoising it would refuse
-        # placements that are legal a moment later, which loses cartons
-        # silently rather than failing a test.
+        # A support failure is NOT permanent: a later item can become this
+        # one's floor. Memoising it would silently refuse legal placements.
         support_blocked = False
         for orient_idx, dims in orientations(item):
             if not inside(pos, dims, carton):
@@ -336,24 +265,16 @@ def place(item: Item, state: CartonState) -> Placement | None:
                 best, best_score = candidate, score
 
         if not support_blocked:
-            # Every orientation was out of bounds or hit a placed item, and
-            # neither can come undone: the carton never grows and items are
-            # never removed. So this shape can never be placed here again.
+            # Bounds and overlap failures are permanent: the carton never
+            # grows and items are never removed.
             state.infeasible.add(memo_key)
 
-    # Only reached with scoring on, where every candidate is evaluated rather
-    # than the first workable one taken. Ties keep the earliest, and points
-    # arrive bottom-first, so an equal score still prefers the lower position.
+    # Only reached with scoring on.
     return best
 
 
 def smallest_dim_suffixes(items: Sequence[Item]) -> list[int]:
-    """suffix[i] = the smallest dimension among items[i:], or 0 past the end.
-
-    Computed once per carton fill rather than rescanned after every placement,
-    which is what keeps the point removal below cheaper than the scans it
-    saves.
-    """
+    """suffix[i] = the smallest dimension among items[i:], or 0 past the end."""
     suffix = [0] * (len(items) + 1)
     for i in range(len(items) - 1, -1, -1):
         suffix[i] = min(suffix[i + 1] or min(items[i].dims), min(items[i].dims))
@@ -379,27 +300,18 @@ def fill_carton(carton: Carton, items: Sequence[Item]
     return state.packed(), left
 
 
+# --------------------------------------------------------------------------- #
+# Many cartons: choose a carton type, fill it, repeat.
+# --------------------------------------------------------------------------- #
+
 def pack_one(ordering: Sequence[Item], cartons: Sequence[Carton],
              table: dict[tuple, tuple[int, ...]]
              ) -> tuple[list[PackedCarton], list[Item]]:
-    """Fill cartons with items in the given order.
+    """Fill cartons with items in the given order, one carton at a time.
 
-    THE ONE THING THAT MATTERS. At each step, evaluate EVERY carton type
-    against the remaining items and take the one packing the most items,
-    tie-breaking on the smallest carton.
-
-    Measured against the obvious alternative, opening the smallest carton that
-    fits the next item, with everything else here unchanged: 28 cartons against
-    143 on W4, 47 against 513 on W3, 21 against 505 on W2. Five to twenty times
-    worse. v1's docstring puts this at 73 against 28; that number does not
-    reproduce on any of these workloads and the table above replaces it.
-
-    Only the first CHUNK remaining items are offered to each carton. Without
-    this, cost grows about n^1.6 and a 1600-item order takes 11 s. Nothing is
-    dropped: items past the window are considered for the next carton, and the
-    ordering is volume-descending, so the near-term items were the right ones
-    to try anyway. Phase 5 re-measures whether 120 is still the right number
-    once placement is cheaper.
+    Each round, EVERY usable carton type is test-filled with the next CHUNK
+    items, and the one packing the most volume is kept, ties going to the
+    smaller carton. This is the most important decision in the solver.
     """
     remaining = list(ordering)
     out: list[PackedCarton] = []
@@ -407,9 +319,7 @@ def pack_one(ordering: Sequence[Item], cartons: Sequence[Carton],
 
     while remaining:
         window, rest = remaining[:CHUNK], remaining[CHUNK:]
-        # Carton types that cannot hold a single item in the window are not
-        # worth filling: the result is always empty. With a window of mostly
-        # large items this skips the small cartons outright.
+        # Skip carton types that cannot hold a single item in the window.
         usable = {idx for item in window
                   for idx in table[(item.dims, item.allowed_rotations)]}
         best: tuple[PackedCarton, list[Item]] | None = None
@@ -421,7 +331,9 @@ def pack_one(ordering: Sequence[Item], cartons: Sequence[Carton],
             pc, left = fill_carton(carton, window)
             if not pc.placements:
                 continue
-            key = (-len(pc.placements), carton.volume)
+            packed_volume = sum(p.dims[0] * p.dims[1] * p.dims[2]
+                                for p in pc.placements)
+            key = (-packed_volume, carton.volume)
             if best_key is None or key < best_key:
                 best_key, best = key, (pc, left)
         if best is None:
@@ -432,16 +344,126 @@ def pack_one(ordering: Sequence[Item], cartons: Sequence[Carton],
     return out, remaining
 
 
+# --------------------------------------------------------------------------- #
+# Carton elimination: try to remove a carton from a finished layout.
+# --------------------------------------------------------------------------- #
+
+def state_from(packed: PackedCarton) -> CartonState:
+    """Rebuild the live-point state of an already filled carton.
+
+    Replaying the placements reproduces the point set exactly.
+    drop_points_too_small_for is deliberately not replayed: it depended on
+    which items were still to come, and those are now different.
+    """
+    state = CartonState(packed.carton)
+    for p in packed.placements:
+        state.add(p)
+    return state
+
+
+def _admits(item: Item, placements: Sequence[Placement]) -> bool:
+    """Can this item join these placements, on conflict rules alone?
+
+    Needed because elimination moves items between cartons that may come from
+    different conflict groups. Geometry would never catch a DG clash.
+    """
+    return not any(conflict(item, p.item) for p in placements)
+
+
+def _empty_into(victim: PackedCarton, others: Sequence[PackedCarton]
+                ) -> list[PackedCarton] | None:
+    """Move every item of `victim` into `others`, or return None.
+
+    Largest items first, since they are the likeliest to fail.
+    """
+    states = [state_from(pc) for pc in others]
+    items = sorted((p.item for p in victim.placements), key=lambda i: -i.volume)
+    for item in items:
+        for state in states:
+            if not _admits(item, state.placements):
+                continue
+            p = place(item, state)
+            if p is not None:
+                state.add(p)
+                break
+        else:
+            return None
+    return [state.packed() for state in states]
+
+
+def _repack_tail(out: Sequence[PackedCarton], span: int,
+                 cartons: Sequence[Carton],
+                 table: dict[tuple, tuple[int, ...]]
+                 ) -> list[PackedCarton] | None:
+    """Re-pack the last `span` cartons from scratch, hoping for span - 1.
+
+    Returns None unless the result uses fewer cartons AND places everything.
+    """
+    tail = out[-span:]
+    items = [p.item for pc in tail for p in pc.placements]
+    # Repacking is a small full solve, so it is capped by item count.
+    if len(items) > REPACK_MAX_ITEMS:
+        return None
+    # pack_one enforces no conflict rules, so only repack a tail that forms a
+    # single conflict group.
+    if len(split_compatible(items)) != 1:
+        return None
+    for _name, sort_key in SORT_KEYS:
+        got, left = pack_one(sorted(items, key=sort_key), cartons, table)
+        if not left and len(got) < span:
+            return list(out[:-span]) + got
+    return None
+
+
+def eliminate(out: Sequence[PackedCarton], cartons: Sequence[Carton],
+              table: dict[tuple, tuple[int, ...]]) -> list[PackedCarton]:
+    """Remove cartons from a finished layout, if any can be removed.
+
+    1. Empty the carton holding the fewest items into the others.
+    2. Re-pack the last two, then the last three, cartons into one fewer.
+
+    A move is only taken if it removes a carton and places every item, so the
+    result is never worse than the input. Bounded by fixed counts, not a clock.
+    """
+    result = list(out)
+    attempts = 0
+    removed = ELIMINATE_EMPTY
+    while removed and len(result) > 1 and attempts < ELIMINATE_ATTEMPTS:
+        # Fewest items, then smallest carton, then position: a total order,
+        # so the choice of victim is deterministic.
+        order = sorted(range(len(result)),
+                       key=lambda i: (len(result[i].placements),
+                                      result[i].carton.volume, i))
+        removed = False
+        for vi in order[:ELIMINATE_VICTIMS]:
+            if attempts >= ELIMINATE_ATTEMPTS:
+                break
+            attempts += 1
+            merged = _empty_into(result[vi],
+                                 [pc for i, pc in enumerate(result) if i != vi])
+            if merged is not None:
+                result, removed = merged, True
+                break
+
+    for span in REPACK_SPANS if ELIMINATE_REPACK else ():
+        while len(result) >= span:
+            better = _repack_tail(result, span, cartons, table)
+            if better is None:
+                break
+            result = better
+    return result
+
+
+# --------------------------------------------------------------------------- #
+# Order preparation: fit table, rejects, canonical order.
+# --------------------------------------------------------------------------- #
+
 def carton_fit_table(items: Sequence[Item], cartons: Sequence[Carton]
                      ) -> dict[tuple, tuple[int, ...]]:
-    """Per item SHAPE, which carton types could hold it if they were empty.
+    """For each item SHAPE, the carton types that could hold it when empty.
 
-    Keyed by (dims, allowed_rotations), which is everything that decides the
-    answer, so a 1000-item order over 40 distinct SKUs does 40 tests rather
-    than 1000. The value is carton indices, in the caller's order.
-
-    Two uses, both pure speed: skip carton types an item can never fit, and
-    identify items that fit nothing before any geometry runs.
+    Keyed by (dims, allowed_rotations), so 1000 items over 40 SKUs cost 40
+    tests. Values are carton indices in the caller's order.
     """
     table: dict[tuple, tuple[int, ...]] = {}
     for item in items:
@@ -454,11 +476,7 @@ def carton_fit_table(items: Sequence[Item], cartons: Sequence[Carton]
 
 def _fits_some_carton(item: Item, cartons: Sequence[Carton],
                       table: dict[tuple, tuple[int, ...]]) -> bool:
-    """Is there a carton this item could go in, on both geometry and mass?
-
-    Mass is checked here rather than in the shape table because two items of
-    the same shape can have different masses.
-    """
+    """Could any carton hold this item, on both geometry and mass?"""
     for idx in table[(item.dims, item.allowed_rotations)]:
         limit = cartons[idx].max_contents_mass
         if limit is None or item.mass <= limit:
@@ -468,102 +486,82 @@ def _fits_some_carton(item: Item, cartons: Sequence[Carton],
 
 def _reject_message(item: Item, cartons: Sequence[Carton],
                     table: dict[tuple, tuple[int, ...]]) -> str:
-    """Why this item could not be packed, in the packer's terms.
-
-    An item that fits but is too heavy told "exceeds every carton in all
-    permitted orientations" sends a packer looking for a bigger box, which is
-    not the problem. The two causes need different words.
-    """
+    """Why this item could not be packed: too big, or too heavy."""
     if table[(item.dims, item.allowed_rotations)]:
         return "Fits geometrically, but exceeds the mass limit of every carton"
     return "Exceeds every carton in all permitted orientations"
 
 
 def canonical_key(item: Item) -> tuple:
-    """Total order over items that ignores where they arrived in the request.
+    """Total order over items by content, ignoring request order.
 
-    Two orders holding the same goods in a different sequence must produce the
-    same layout, or a packer who re-keys an order gets a different picture for
-    no reason. Sorting by content alone is what guarantees that.
-
-    Every field that can affect packing is included, including
-    incompatible_with, which decides grouping. dg_class is split into
-    "is it set" and its value because None cannot be compared to a string.
+    The same goods submitted in a different sequence must give the same
+    layout. dg_class is split in two because None cannot be compared to str.
     """
     return (item.dims, item.mass, item.allowed_rotations,
             item.dg_class is None, item.dg_class or "",
             tuple(sorted(item.incompatible_with)), item.ref)
 
 
-# The orderings available. The functions return NEGATED values so that a plain
-# ascending sort is descending in the quantity that matters, which keeps
-# Python's stable sort intact. Stability is what breaks ties by canonical
-# position, so no tie is ever resolved by anything that varies between runs.
+# --------------------------------------------------------------------------- #
+# Orderings: the four named sort keys, then seeded restarts.
+# --------------------------------------------------------------------------- #
+
+# Keys return NEGATED values so a plain ascending sort is descending. Python's
+# sort is stable, so ties keep canonical order and never vary between runs.
 SORT_KEYS: tuple[tuple[str, object], ...] = (
     ("volume", lambda i: (-i.volume,)),
     ("longest_edge", lambda i: (-max(i.dims), -min(i.dims))),
-    ("tallest", lambda i: (-max(i.dims), -i.volume)),
+    ("mass", lambda i: (-i.mass, -i.volume)),
     ("base_area", lambda i: (-(i.dims[0] * i.dims[1]), -i.volume)),
 )
 
-# Which ordering to try FIRST depends on the size of the order, because no
-# single ordering wins everywhere and the budget often pays for only one pass.
-# Trying them in a size-blind sequence meant large orders spent their one pass
-# on the ordering that suited them worst.
-#
-# Measured over 8 seeds per size, single pass, mean cartons (geometry-bound):
-#
-#     items   volume   longest_edge   tallest   base_area
-#       100     2.62           2.88      2.88        2.88
-#       200     4.75           4.88      4.75        4.88
-#       250     5.75           5.75      5.75        5.75
-#       300     6.88           6.75      6.75        6.75
-#       400     9.38           8.50      8.50        9.00
-#       600    14.00          12.38     12.25       13.25
-#
-# Volume wins or ties up to 250 and loses steadily above it, so 250 is the
-# changeover. Below it the sequence is unchanged. Above it the orderings are
-# listed best-measured first, which costs nothing when all four run and is
-# worth several cartons when only one does.
-LARGE_ORDER_ITEMS = 250
-
-_SMALL_FIRST = ("volume", "longest_edge", "tallest", "base_area")
-_LARGE_FIRST = ("longest_edge", "tallest", "base_area", "volume")
+# Best-first order of the named keys, by order size. Volume wins up to 250
+# items; longest edge wins above. Mass is weakest at large sizes, so last.
+_SMALL_FIRST = ("volume", "longest_edge", "base_area", "mass")
+_LARGE_FIRST = ("longest_edge", "base_area", "volume", "mass")
 
 
 def sort_keys_for(n_items: int) -> tuple[tuple[str, object], ...]:
-    """The orderings to try, best-first for an order of this size.
-
-    Size-dependent, but fixed and table-driven: the same item count always
-    yields the same sequence, so this cannot make a layout depend on anything
-    outside the request.
-    """
+    """The named orderings to try, best-first for an order of this size."""
     by_name = dict(SORT_KEYS)
     names = _SMALL_FIRST if n_items <= LARGE_ORDER_ITEMS else _LARGE_FIRST
     return tuple((n, by_name[n]) for n in names)
 
 
-# Measured cost of ONE packing pass, as (up to this many items, milliseconds).
-# Produced by bench/calibrate_passes.py on the development machine, using the
-# slowest of the four orderings at each size so the estimate is never
-# optimistic. Re-run that script and replace this table if the target machine
-# is much faster or slower.
-#
-# It is a table and not a measurement because the decision has to be made
-# before any packing starts. Timing the solve and stopping when the budget
-# runs out would make the layout depend on machine load, so the same request
-# would come back different on a busy afternoon. A fixed table keeps the
-# answer reproducible, which is worth more here than using every last
-# millisecond.
-PASS_COST_MS: tuple[tuple[int, int], ...] = (
-    (25, 15), (50, 50), (100, 205), (200, 620), (300, 1300),
-    (500, 2450), (750, 4100), (1000, 5600),
-)
+def restart_ordering(group: Sequence[Item], rng: random.Random,
+                     window: int | None = None) -> list[Item]:
+    """A seeded permutation of one group that stays close to volume order.
 
-# Cost grows faster than linearly, so anything past the table is extrapolated
-# from the last row rather than assumed to cost the same.
-_LAST_N, _LAST_MS = PASS_COST_MS[-1]
+    Each next item is chosen at random from the first `window` still unclaimed
+    in volume-descending order, so big items still come first. Deterministic
+    for a given `rng`; ties stay canonical because the input is canonical.
+    """
+    w = RESTART_WINDOW if window is None else window
+    pool = sorted(group, key=lambda i: (-i.volume,))
+    out: list[Item] = []
+    while pool:
+        out.append(pool.pop(rng.randrange(min(w, len(pool)))))
+    return out
 
+
+def ordering_for_pass(p: int, keys: Sequence[tuple[str, object]],
+                      seed: int) -> object:
+    """The function that orders a group on pass `p`.
+
+    Passes 0 to len(keys) - 1 use the named keys; later passes are seeded
+    restarts. Each restart gets its own Random seeded from (seed, p), so pass
+    7 is the same whether or not passes 5 and 6 ran.
+    """
+    if p < len(keys):
+        return lambda group, k=keys[p][1]: sorted(group, key=k)
+    rng = random.Random(seed * 1_000_003 + p)
+    return lambda group, r=rng: restart_ordering(group, r)
+
+
+# --------------------------------------------------------------------------- #
+# Budget and bounds.
+# --------------------------------------------------------------------------- #
 
 def estimated_pass_ms(n_items: int) -> int:
     """What one pass over this many items is expected to cost."""
@@ -574,35 +572,27 @@ def estimated_pass_ms(n_items: int) -> int:
 
 
 def passes_for(n_items: int, time_budget_ms: int) -> int:
-    """How many orderings to try. Always at least one, never more than four.
+    """How many passes to run: budget over estimated cost, 1 to MAX_PASSES.
 
-    At least one because an answer is not optional. At most four because
-    SORT_KEYS holds four, and measurement says the fourth rarely adds anything
-    that the second has not already found.
+    Always at least one, because an answer is not optional. So an order whose
+    single pass costs more than the budget overruns it: a correct late answer,
+    never a wrong prompt one. No clock is read.
     """
     if n_items <= 0:
         return 1
     affordable = time_budget_ms // estimated_pass_ms(n_items)
-    return max(1, min(len(SORT_KEYS), affordable))
+    return max(1, min(MAX_PASSES, affordable))
 
 
 def lower_bound(groups: Sequence[Sequence[Item]],
                 cartons: Sequence[Carton]) -> int:
-    """Fewest cartons any correct solution could possibly use.
+    """Fewest cartons any correct solution could use.
 
-    Summed per conflict group, because groups cannot share a carton, which
-    makes the sum a stronger bound than one taken over the whole order.
-
-    Two bounds per group, whichever is larger:
-      volume, total item volume over the largest carton's volume;
-      mass, total item mass over the largest mass limit.
-
-    The mass bound only counts when EVERY carton has a limit. One unlimited
-    carton and the bound collapses to 1, which would be worse than useless:
-    an early stop on a bound that is too low would stop at a layout that is
-    not optimal while claiming it is.
-
-    Integer ceiling by -(-a // b), so there is no float anywhere near this.
+    Per conflict group, the larger of: total volume over the largest carton
+    volume, and total mass over the largest mass limit. Summed across groups,
+    since groups cannot share a carton. The mass bound only counts when EVERY
+    carton has a limit; otherwise it would be too low and the early stop would
+    wrongly claim optimality. Integer ceilings only.
     """
     biggest_volume = max((c.volume for c in cartons), default=0)
     limits = [c.max_contents_mass for c in cartons]
@@ -623,59 +613,64 @@ def lower_bound(groups: Sequence[Sequence[Item]],
 
 def result_key(packed: Sequence[PackedCarton],
                unplaced: Sequence[Item]) -> tuple[int, int, int]:
-    """The objective, lexicographically: unplaced, then cartons, then volume.
-
-    Fill rate is deliberately absent. Maximising fill rewards many small tight
-    cartons, which is the opposite of what the client asked for.
-    """
+    """The objective: unplaced, then cartons, then total carton volume."""
     return (len(unplaced), len(packed),
             sum(c.carton.volume for c in packed))
 
 
-def _run_pass(groups: Sequence[list[Item]], cartons: Sequence[Carton],
-              table: dict[tuple, tuple[int, ...]], sort_key
-              ) -> tuple[list[PackedCarton], list[Item]]:
-    """One complete packing pass over every conflict group, in one ordering."""
+# --------------------------------------------------------------------------- #
+# The solve.
+# --------------------------------------------------------------------------- #
+
+def _run_pass_ordered(groups: Sequence[list[Item]], cartons: Sequence[Carton],
+                      table: dict[tuple, tuple[int, ...]], order_fn
+                      ) -> tuple[list[PackedCarton], list[Item]]:
+    """One full pass over every conflict group, ordered by `order_fn`.
+
+    Groups are visited in a fixed order, so a restart's Random is consumed in
+    a fixed order too.
+    """
     packed: list[PackedCarton] = []
     unplaced: list[Item] = []
     for group in groups:
-        out, left = pack_one(sorted(group, key=sort_key), cartons, table)
+        out, left = pack_one(order_fn(group), cartons, table)
         packed.extend(out)
         unplaced.extend(left)
     return packed, unplaced
 
 
+def _run_pass(groups: Sequence[list[Item]], cartons: Sequence[Carton],
+              table: dict[tuple, tuple[int, ...]], sort_key
+              ) -> tuple[list[PackedCarton], list[Item]]:
+    """One pass in one named sort order. Used by the bench scripts."""
+    return _run_pass_ordered(groups, cartons, table,
+                             lambda group: sorted(group, key=sort_key))
+
+
 def pack(items: Sequence[Item], cartons: Sequence[Carton],
          time_budget_ms: int, seed: int) -> Solution:
-    """Solve. One deterministic pass per conflict group.
+    """Solve: several orderings, each followed by elimination, best kept.
 
-    Fully deterministic: no randomness, no wall-clock dependence. The same
-    request returns the same layout on any machine, every time, which matters
-    when a packer re-scans an order and expects the same picture.
+    Steps: reject items no carton can hold; sort into canonical order; split
+    into conflict groups; compute the lower bound; then run up to
+    passes_for(...) passes and keep the best under result_key, stopping early
+    if a pass reaches the lower bound.
 
-`seed` is honoured as a contract field and reported back, but unused:
-    there is nothing random to seed. `time_budget_ms` chooses how many
-    orderings to try, through the fixed table in passes_for, and is never
-    compared against a clock mid-solve. Reading the clock would make the
-    layout depend on how loaded the machine was, so the same request would
-    come back different, which is the one thing this solver promises not to
-    do.
+    Deterministic: the same request and seed give the same layout on any
+    machine. The only randomness is seeded from `seed`, and the only clock
+    read is elapsed_ms, measured after the answer is fixed.
     """
     t0 = time.monotonic()
     table = carton_fit_table(items, cartons)
 
-    # Items no carton can ever hold are rejected before packing, not
-    # discovered during it. Left in, a CHUNK-sized run of them fills
-    # pack_one's window, packs nothing, and takes every placeable item behind
-    # them down as a false rejection.
+    # Reject unplaceable items up front. Left in, a CHUNK of them would fill
+    # pack_one's window and falsely reject the placeable items behind them.
     packable: list[Item] = []
     all_unplaced: list[Item] = []
     for item in items:
         (packable if _fits_some_carton(item, cartons, table)
          else all_unplaced).append(item)
 
-    # Canonical order first, so the conflict grouping below and every sort
-    # above it depend on what was ordered, never on the sequence it arrived in.
     canonical = sorted(packable, key=canonical_key)
     groups = split_compatible(canonical)
     bound = lower_bound(groups, cartons)
@@ -683,8 +678,11 @@ def pack(items: Sequence[Item], cartons: Sequence[Carton],
     best: tuple[list[PackedCarton], list[Item]] | None = None
     best_key: tuple[int, int, int] | None = None
     keys = sort_keys_for(len(canonical))
-    for _name, sort_key in keys[:passes_for(len(canonical), time_budget_ms)]:
-        packed, unplaced = _run_pass(groups, cartons, table, sort_key)
+    for p in range(passes_for(len(canonical), time_budget_ms)):
+        order_fn = ordering_for_pass(p, keys, seed)
+        packed, unplaced = _run_pass_ordered(groups, cartons, table, order_fn)
+        if ELIMINATE:
+            packed = eliminate(packed, cartons, table)
         key = result_key(packed, unplaced)
         if best_key is None or key < best_key:
             best_key, best = key, (packed, unplaced)

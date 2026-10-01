@@ -20,6 +20,7 @@ import pytest
 
 from fitsolver.domain import Carton, Item
 from fitsolver.greedy2.pack import (
+    MAX_PASSES,
     PASS_COST_MS,
     SORT_KEYS,
     canonical_key,
@@ -213,18 +214,21 @@ def test_the_early_stop_fires_when_one_carton_is_provably_enough():
     it, and no further ordering is tried."""
     calls = []
     import fitsolver.greedy2.pack as mod
-    real = mod._run_pass
+    # pack() drives _run_pass_ordered, because from phase 12 a pass can be a
+    # seeded permutation rather than a sort. _run_pass is the sort-key front
+    # door onto it and is what the bench scripts use.
+    real = mod._run_pass_ordered
 
     def counting(*a, **k):
         calls.append(1)
         return real(*a, **k)
 
-    mod._run_pass = counting
+    mod._run_pass_ordered = counting
     try:
         greedy2_pack([Item(f"T{i}", (40, 40, 40), 10) for i in range(8)],
                      NO_LIMITS, time_budget_ms=60_000, seed=1)
     finally:
-        mod._run_pass = real
+        mod._run_pass_ordered = real
     assert len(calls) == 1, "the bound was reached but more passes still ran"
 
 
@@ -239,10 +243,14 @@ def test_an_empty_order_has_a_zero_bound():
 # The work cap: a table, never a clock.
 # --------------------------------------------------------------------------- #
 
-def test_passes_for_is_between_one_and_the_number_of_keys():
+def test_passes_for_is_between_one_and_the_pass_cap():
+    """The ceiling was len(SORT_KEYS) until phase 12 item 1 added seeded
+    restarts after the named orderings. It is MAX_PASSES now, and it is still
+    a fixed number rather than anything the clock decides."""
+    assert MAX_PASSES >= len(SORT_KEYS)
     for n in (0, 1, 10, 500, 100_000):
         for budget in (1, 50, 1200, 60_000, 10 ** 9):
-            assert 1 <= passes_for(n, budget) <= len(SORT_KEYS)
+            assert 1 <= passes_for(n, budget) <= MAX_PASSES
 
 
 def test_passes_for_never_decreases_with_budget():

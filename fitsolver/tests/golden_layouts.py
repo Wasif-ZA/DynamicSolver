@@ -17,6 +17,12 @@ far:
     phase 5  re-recorded; the size-dependent ordering and CHUNK 240 change
              layouts by design. Two fixtures improved by a carton, none got
              worse
+    phase 11 re-recorded; the mass ordering and pack_one's packed-volume
+             carton key change layouts by design. Every fixture kept its
+             carton count, in both regimes. One layout moved,
+             catalogue_300.mass_limited, and it moved the right way: still 17
+             cartons, but an L and an L where an XL and an S were, for
+             1534500000 mm3 of carton against 1540224000
 
 To re-record, deliberately, after an approved change of behaviour:
 
