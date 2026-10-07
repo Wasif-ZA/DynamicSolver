@@ -247,6 +247,7 @@ def place(item: Item, state: CartonState) -> Placement | None:
         # A support failure is NOT permanent: a later item can become this
         # one's floor. Memoising it would silently refuse legal placements.
         support_blocked = False
+        feasible_here = False
         for orient_idx, dims in orientations(item):
             if not inside(pos, dims, carton):
                 continue
@@ -260,11 +261,12 @@ def place(item: Item, state: CartonState) -> Placement | None:
                                   sequence=len(state.placements))
             if not CONTACT_SCORING:
                 return candidate
+            feasible_here = True
             score = contact_area(pos, dims, carton, state.placements)
             if best is None or score > best_score:
                 best, best_score = candidate, score
 
-        if not support_blocked:
+        if not support_blocked and not feasible_here:
             # Bounds and overlap failures are permanent: the carton never
             # grows and items are never removed.
             state.infeasible.add(memo_key)
@@ -588,27 +590,34 @@ def lower_bound(groups: Sequence[Sequence[Item]],
                 cartons: Sequence[Carton]) -> int:
     """Fewest cartons any correct solution could use.
 
-    Per conflict group, the larger of: total volume over the largest carton
-    volume, and total mass over the largest mass limit. Summed across groups,
-    since groups cannot share a carton. The mass bound only counts when EVERY
-    carton has a limit; otherwise it would be too low and the early stop would
-    wrongly claim optimality. Integer ceilings only.
+    For a set of items: the larger of total volume over the largest carton
+    volume, and total mass over the largest mass limit. Taken over the whole
+    order, and summed per dangerous-goods class, since two classes can never
+    share a carton; the larger of the two is returned. Not summed per conflict
+    group: greedy colouring can split an incompatible_with chain into more
+    groups than a solution needs. The mass bound only counts when EVERY
+    carton has a limit. Integer ceilings only.
     """
     biggest_volume = max((c.volume for c in cartons), default=0)
     limits = [c.max_contents_mass for c in cartons]
     biggest_mass = None if any(x is None for x in limits) else max(limits)
 
-    total = 0
-    for group in groups:
-        if not group:
-            continue
-        bound = 1
+    def bound(items: Sequence[Item]) -> int:
+        b = 1
         if biggest_volume:
-            bound = max(bound, -(-sum(i.volume for i in group) // biggest_volume))
+            b = max(b, -(-sum(i.volume for i in items) // biggest_volume))
         if biggest_mass:
-            bound = max(bound, -(-sum(i.mass for i in group) // biggest_mass))
-        total += bound
-    return total
+            b = max(b, -(-sum(i.mass for i in items) // biggest_mass))
+        return b
+
+    items = [i for group in groups for i in group]
+    if not items:
+        return 0
+    by_class: dict[str, list[Item]] = {}
+    for i in items:
+        if i.dg_class:
+            by_class.setdefault(i.dg_class, []).append(i)
+    return max(bound(items), sum(bound(c) for c in by_class.values()))
 
 
 def result_key(packed: Sequence[PackedCarton],

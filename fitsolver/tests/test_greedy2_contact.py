@@ -170,3 +170,15 @@ def test_every_invariant_still_holds_with_scoring_either_way(scoring):
                 assert not overlaps(a.pos, a.dims, b.pos, b.dims)
         assert pc.contents_mass <= pc.carton.max_contents_mass
     assert placed_n + len(sol.rejects) == len(items)
+
+
+def test_scoring_does_not_memoise_feasible_points(monkeypatch):
+    import fitsolver.greedy2.pack as mod
+    monkeypatch.setattr(mod, "CONTACT_SCORING", True)
+    state = mod.CartonState(CARTON)
+    item = Item("X", (10, 10, 10), 1)
+    state.add(mod.place(item, state))
+    chosen = mod.place(item, state)
+    for pos in state.points:
+        if pos != chosen.pos:
+            assert (pos, item.dims, item.allowed_rotations) not in state.infeasible

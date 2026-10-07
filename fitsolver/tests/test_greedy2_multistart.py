@@ -209,6 +209,21 @@ def test_the_bound_sums_over_conflict_groups():
     assert lower_bound(split_compatible(items), box) == 3
 
 
+def test_an_incompatibility_chain_does_not_inflate_the_bound():
+    """Chain a-b, b-c, c-d in canonical order a, d, b, c colours greedily into
+    [a,d] [b] [c], but {a,c} {b,d} needs only 2 cartons."""
+    box = [Carton("B", (1000, 1000, 1000), 0)]
+
+    def it(ref, side, bad):
+        return Item(ref, (side, side, side), 1, incompatible_with=frozenset(bad))
+
+    items = [it("a", 10, {"b"}), it("d", 11, {"c"}),
+             it("b", 12, {"a", "c"}), it("c", 13, {"b", "d"})]
+    groups = split_compatible(sorted(items, key=canonical_key))
+    assert len(groups) == 3
+    assert lower_bound(groups, box) <= 2
+
+
 def test_the_early_stop_fires_when_one_carton_is_provably_enough():
     """Everything fits one carton, so the bound is 1, the first pass reaches
     it, and no further ordering is tried."""
