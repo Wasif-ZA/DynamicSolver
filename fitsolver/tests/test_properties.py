@@ -13,7 +13,7 @@ from hypothesis import strategies as st
 from fitsolver.domain import Carton, Item
 from fitsolver.engine import solve
 from fitsolver.geometry import overlaps
-from fitsolver.pack import pack
+from fitsolver.greedy2.pack import pack
 
 dims_st = st.tuples(st.integers(10, 400), st.integers(10, 400),
                     st.integers(10, 400))
