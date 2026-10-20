@@ -137,7 +137,7 @@ The critical path is now: **contract sign-off (12 Aug) → first integration
 ```bash
 cd fitsolver
 pip install fastapi uvicorn hypothesis pytest jsonschema
-PYTHONPATH=src python -m pytest tests/ -q        # 8 passed
+PYTHONPATH=src python -m pytest tests/ -q        # 276 passed (CI, 11bedff, 2026-10-07)
 PYTHONPATH=src python bench/run.py               # appends to history.jsonl
 PYTHONPATH=src uvicorn fitsolver.api:app --port 8000
 curl -s localhost:8000/v1/solve -H 'content-type: application/json' \

@@ -23,4 +23,4 @@ the old one. The trail of what we changed our minds about is the useful part.
 | [0001](0001-record-decisions.md) | Keep a decision log | accepted |
 | [0002](0002-units-and-coordinates.md) | Integer millimetres and grams, origin at the inside corner | accepted |
 | [0003](0003-solver-only-scope.md) | We build the solver only, and publish a contract | accepted |
-| [0004](0004-cpp-implementation.md) | Write the solver in C++20 | accepted |
+| [0004](0004-cpp-implementation.md) | Write the solver in C++20 | superseded by [dynamic-fit ADR-0005](https://github.com/Wasif-ZA/dynamic-fit/blob/main/docs/decisions/0005-python-solver.md) |
