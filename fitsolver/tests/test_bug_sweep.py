@@ -6,6 +6,7 @@ from fastapi.testclient import TestClient
 
 from fitsolver.api import app
 from fitsolver.engine import solve
+from fitsolver.portal import to_contract
 
 CLIENT = TestClient(app)
 
@@ -56,3 +57,26 @@ def test_non_integer_dims_are_rejected(dims):
 def test_non_integer_mass_is_rejected(mass):
     doc = solve(_request(item={"mass": mass}))
     assert [r["reason_code"] for r in doc["rejects"]] == ["MISSING_MASS"]
+
+def _portal(box_group="G", tare_weight=None, max_weight=2.0):
+    box = {"box_reference": "B", "width": 400.0, "length": 400.0, "depth": 400.0,
+           "max_weight": max_weight}
+    if tare_weight is not None:
+        box["tare_weight"] = tare_weight
+    return {"order_id": "o1", "boxes": [box],
+            "items": [{"item_code": "I", "width": 100.0, "length": 100.0,
+                       "depth": 100.0, "weight": 1.5, "box_group": box_group}]}
+
+@pytest.mark.parametrize("group", [3, ["DG"], {"a": 1}])
+def test_portal_non_string_box_group_is_a_422(group):
+    res = CLIENT.post("/v1/solve/portal", json=_portal(box_group=group))
+    assert res.status_code == 422
+
+def test_portal_max_weight_is_gross_of_tare():
+    carton = to_contract(_portal(tare_weight=1.0, max_weight=2.0))["cartons"][0]
+    assert carton["tare_mass"] == 1000
+    assert carton["max_contents_mass"] == 1000
+
+def test_portal_max_weight_below_tare_is_a_422():
+    res = CLIENT.post("/v1/solve/portal", json=_portal(tare_weight=3.0, max_weight=2.0))
+    assert res.status_code == 422
