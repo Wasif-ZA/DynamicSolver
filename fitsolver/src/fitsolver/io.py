@@ -35,6 +35,16 @@ def request_seed(payload: dict) -> int:
     return int.from_bytes(hashlib.sha256(canon.encode()).digest()[:8], "big")
 
 
+def _maximum_boxes(c: dict) -> int | None:
+    """How many of this carton one solution may use. Missing or null = unlimited."""
+    value = c.get("maximum_boxes")
+    if value is None:
+        return None
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        raise RequestError(f"carton {c.get('sku')}: maximum_boxes must be an integer >= 0")
+    return value
+
+
 def parse_request(payload: dict) -> tuple[list[Item], list[Carton],
                                           list[Reject], int, str]:
     """Returns (items, cartons, per-item rejects, budget_ms, order_id)."""
@@ -60,6 +70,7 @@ def parse_request(payload: dict) -> tuple[list[Item], list[Carton],
             tare_mass=int(c.get("tare_mass", 0)),
             max_contents_mass=(int(c["max_contents_mass"])
                                if c.get("max_contents_mass") is not None else None),
+            maximum_boxes=_maximum_boxes(c),
         ))
 
     items: list[Item] = []
