@@ -337,11 +337,22 @@ def _load_json(path: str):
     return json.loads(Path(path).read_text())
 
 
+def _first_present(data: dict, keys: List[str]):
+    return next((data[k] for k in keys if k in data), None)
+
+
 def main(argv: List[str]) -> int:
     if len(argv) == 2:
         data = _load_json(argv[1])
-        boxes_raw = data.get("boxes") or data.get("Boxes") or data.get("box") or data.get("Box")
-        items_raw = data.get("items") or data.get("Items") or data.get("item") or data.get("Item")
+        if not isinstance(data, dict):
+            print(
+                "Combined JSON file must be an object with 'boxes' and 'items' keys, "
+                f"not a {type(data).__name__}.",
+                file=sys.stderr,
+            )
+            return 2
+        boxes_raw = _first_present(data, ["boxes", "Boxes", "box", "Box"])
+        items_raw = _first_present(data, ["items", "Items", "item", "Item"])
         if boxes_raw is None or items_raw is None:
             print(
                 "Combined JSON file must contain both a 'boxes' and an 'items' key.",
