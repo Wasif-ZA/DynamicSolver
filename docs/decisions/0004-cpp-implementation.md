@@ -1,7 +1,13 @@
 # ADR-0004: Write the solver in C++
 
-- **Status:** accepted
+- **Status:** Superseded by [ADR-0005](https://github.com/Wasif-ZA/dynamic-fit/blob/main/docs/decisions/0005-python-solver.md) (dynamic-fit)
 - **Date:** 2026-08-05
+
+> **Superseded.** The team stayed in Python: no C++ was ever written, and the repository holds the
+> Python package `fitsolver`. The decision is recorded in dynamic-fit
+> [ADR-0005](https://github.com/Wasif-ZA/dynamic-fit/blob/main/docs/decisions/0005-python-solver.md)
+> (dated 2026-08-25, "Supersedes: ADR-0004"), and was carried into the 10 Sep presentation planning
+> meeting. The text below is kept unchanged as the original argument.
 
 ## Context
 
