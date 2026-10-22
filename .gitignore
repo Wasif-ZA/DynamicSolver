@@ -13,3 +13,6 @@ contract/fixtures.zip
 contract/contract-manifest.json
 contract/contract-*.zip
 contract/contract-*.zip.sha256
+
+# macOS Finder metadata
+.DS_Store
