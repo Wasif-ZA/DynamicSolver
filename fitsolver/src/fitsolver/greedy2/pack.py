@@ -306,16 +306,73 @@ def fill_carton(carton: Carton, items: Sequence[Item]
 # Many cartons: choose a carton type, fill it, repeat.
 # --------------------------------------------------------------------------- #
 
+def caps_left(kept: Sequence[PackedCarton], cartons: Sequence[Carton]
+              ) -> list[int | None]:
+    """Uses left per carton type (None = unlimited) after `kept` is counted.
+
+    Cartons are matched by identity: every PackedCarton holds the very Carton
+    object from `cartons` that fill_carton was given.
+    """
+    caps = [c.maximum_boxes for c in cartons]
+    index = {id(c): i for i, c in enumerate(cartons)}
+    for pc in kept:
+        i = index[id(pc.carton)]
+        if caps[i] is not None:
+            caps[i] -= 1
+    return caps
+
+
+def _has_open_carton(item: Item, cartons: Sequence[Carton],
+                     table: dict[tuple, tuple[int, ...]],
+                     caps: list[int | None]) -> bool:
+    """Could this item still go in a carton type that has uses left?"""
+    for idx in table[(item.dims, item.allowed_rotations)]:
+        if caps[idx] == 0:
+            continue
+        limit = cartons[idx].max_contents_mass
+        if limit is None or item.mass <= limit:
+            return True
+    return False
+
+
+def _set_aside_capped(items: Sequence[Item], cartons: Sequence[Carton],
+                      table: dict[tuple, tuple[int, ...]],
+                      caps: list[int | None], capped_out: list[Item]
+                      ) -> list[Item]:
+    """Keep the items some carton type with uses left can hold.
+
+    The rest go to capped_out. Left in, a CHUNK of them would fill the window,
+    pack nothing, and falsely reject the placeable items behind them. Order is
+    preserved, so nothing else moves.
+    """
+    keep: list[Item] = []
+    for item in items:
+        (keep if _has_open_carton(item, cartons, table, caps)
+         else capped_out).append(item)
+    return keep
+
+
 def pack_one(ordering: Sequence[Item], cartons: Sequence[Carton],
-             table: dict[tuple, tuple[int, ...]]
+             table: dict[tuple, tuple[int, ...]],
+             caps: list[int | None] | None = None
              ) -> tuple[list[PackedCarton], list[Item]]:
     """Fill cartons with items in the given order, one carton at a time.
 
     Each round, EVERY usable carton type is test-filled with the next CHUNK
     items, and the one packing the most volume is kept, ties going to the
     smaller carton. This is the most important decision in the solver.
+
+    `caps` is the uses left per carton type (maximum_boxes, None = unlimited).
+    It is decremented in place, so a caller can share it across calls.
     """
+    if caps is None:
+        caps = [c.maximum_boxes for c in cartons]
+    limited = any(cap is not None for cap in caps)
+    capped_out: list[Item] = []
     remaining = list(ordering)
+    if limited:
+        # A type may already be used up by an earlier conflict group.
+        remaining = _set_aside_capped(remaining, cartons, table, caps, capped_out)
     out: list[PackedCarton] = []
     by_volume = sorted(range(len(cartons)), key=lambda i: cartons[i].volume)
 
@@ -326,8 +383,9 @@ def pack_one(ordering: Sequence[Item], cartons: Sequence[Carton],
                   for idx in table[(item.dims, item.allowed_rotations)]}
         best: tuple[PackedCarton, list[Item]] | None = None
         best_key: tuple[int, int] | None = None
+        best_ci = -1
         for ci in by_volume:
-            if ci not in usable:
+            if ci not in usable or caps[ci] == 0:
                 continue
             carton = cartons[ci]
             pc, left = fill_carton(carton, window)
@@ -337,13 +395,18 @@ def pack_one(ordering: Sequence[Item], cartons: Sequence[Carton],
                                 for p in pc.placements)
             key = (-packed_volume, carton.volume)
             if best_key is None or key < best_key:
-                best_key, best = key, (pc, left)
+                best_key, best, best_ci = key, (pc, left), ci
         if best is None:
-            return out, remaining
+            return out, capped_out + remaining
         pc, left = best
         out.append(pc)
         remaining = left + rest
-    return out, remaining
+        if caps[best_ci] is not None:
+            caps[best_ci] -= 1
+            if caps[best_ci] == 0:
+                remaining = _set_aside_capped(remaining, cartons, table, caps,
+                                              capped_out)
+    return out, capped_out + remaining
 
 
 # --------------------------------------------------------------------------- #
@@ -411,7 +474,9 @@ def _repack_tail(out: Sequence[PackedCarton], span: int,
     if len(split_compatible(items)) != 1:
         return None
     for _name, sort_key in SORT_KEYS:
-        got, left = pack_one(sorted(items, key=sort_key), cartons, table)
+        # The cartons outside the tail still count against maximum_boxes.
+        got, left = pack_one(sorted(items, key=sort_key), cartons, table,
+                             caps_left(out[:-span], cartons))
         if not left and len(got) < span:
             return list(out[:-span]) + got
     return None
@@ -641,8 +706,9 @@ def _run_pass_ordered(groups: Sequence[list[Item]], cartons: Sequence[Carton],
     """
     packed: list[PackedCarton] = []
     unplaced: list[Item] = []
+    caps = [c.maximum_boxes for c in cartons]   # fresh for every pass
     for group in groups:
-        out, left = pack_one(order_fn(group), cartons, table)
+        out, left = pack_one(order_fn(group), cartons, table, caps)
         packed.extend(out)
         unplaced.extend(left)
     return packed, unplaced
@@ -699,11 +765,17 @@ def pack(items: Sequence[Item], cartons: Sequence[Carton],
             break  # optimal on carton count; no ordering can beat it
 
     all_cartons, group_unplaced = best if best is not None else ([], [])
-    all_unplaced.extend(group_unplaced)
 
     rejects = [Reject(item_ref=i.ref, reason_code="NO_FITTING_CARTON",
                       message=_reject_message(i, cartons, table))
                for i in all_unplaced]
+    # These all fit some carton type, empty, on geometry and mass, so they
+    # were left only because each type they fit reached maximum_boxes.
+    # UNPLACEABLE is already in the contract, so no schema change is needed.
+    rejects += [Reject(item_ref=i.ref, reason_code="UNPLACEABLE",
+                       message="Fits, but every carton type it fits has reached "
+                               "its maximum_boxes limit")
+                for i in group_unplaced]
     return Solution(cartons=all_cartons, rejects=rejects, seed=seed,
                     time_budget_ms=time_budget_ms,
                     elapsed_ms=int((time.monotonic() - t0) * 1000),
