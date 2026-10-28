@@ -20,7 +20,11 @@ def health() -> dict:
 
 @app.post("/v1/solve")
 async def solve_endpoint(request: Request) -> dict:
-    payload = await request.json()
+    try:
+        payload = await request.json()
+    except ValueError as e:
+        raise HTTPException(status_code=400,
+                            detail="request body is not valid JSON") from e
     try:
         return solve(payload)
     except io.RequestError as e:

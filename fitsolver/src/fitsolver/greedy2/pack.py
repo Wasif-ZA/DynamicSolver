@@ -749,6 +749,7 @@ def pack(items: Sequence[Item], cartons: Sequence[Carton],
     canonical = sorted(packable, key=canonical_key)
     groups = split_compatible(canonical)
     bound = lower_bound(groups, cartons)
+    min_volume = min((c.volume for c in cartons), default=0)
 
     best: tuple[list[PackedCarton], list[Item]] | None = None
     best_key: tuple[int, int, int] | None = None
@@ -761,8 +762,9 @@ def pack(items: Sequence[Item], cartons: Sequence[Carton],
         key = result_key(packed, unplaced)
         if best_key is None or key < best_key:
             best_key, best = key, (packed, unplaced)
-        if not unplaced and len(packed) == bound:
-            break  # optimal on carton count; no ordering can beat it
+        if (not unplaced and len(packed) == bound
+                and all(c.carton.volume == min_volume for c in packed)):
+            break  # optimal on count and volume; no ordering can beat it
 
     all_cartons, group_unplaced = best if best is not None else ([], [])
 
