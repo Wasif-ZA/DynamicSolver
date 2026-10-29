@@ -283,10 +283,8 @@ def smallest_dim_suffixes(items: Sequence[Item]) -> list[int]:
     return suffix
 
 
-def fill_carton(carton: Carton, items: Sequence[Item]
-                ) -> tuple[PackedCarton, list[Item]]:
-    """Greedily place items, in the given order, into one carton."""
-    state = CartonState(carton)
+def _fill_state(state: CartonState, items: Sequence[Item]) -> list[Item]:
+    """Greedily place items, in the given order, into `state`. Returns the rest."""
     suffix = smallest_dim_suffixes(items)
     left: list[Item] = []
     for i, item in enumerate(items):
@@ -299,7 +297,32 @@ def fill_carton(carton: Carton, items: Sequence[Item]
             # only the items still to come matter.
             if suffix[i + 1]:
                 state.drop_points_too_small_for(suffix[i + 1])
+    return left
+
+
+def fill_carton(carton: Carton, items: Sequence[Item]
+                ) -> tuple[PackedCarton, list[Item]]:
+    """Greedily place items, in the given order, into one carton."""
+    state = CartonState(carton)
+    left = _fill_state(state, items)
     return state.packed(), left
+
+
+def _top_up(packed: PackedCarton, rest: list[Item]
+            ) -> tuple[PackedCarton, list[Item]]:
+    """Keep offering the chosen carton more items, CHUNK at a time.
+
+    Only called when the carton took its WHOLE window, so it may have room for
+    more. Stops after the first chunk it cannot take completely, so the cost
+    stays bounded exactly as CHUNK intends.
+    """
+    state = state_from(packed)
+    while rest:
+        window, rest = rest[:CHUNK], rest[CHUNK:]
+        left = _fill_state(state, window)
+        if left:
+            return state.packed(), left + rest
+    return state.packed(), []
 
 
 # --------------------------------------------------------------------------- #
@@ -352,6 +375,50 @@ def _set_aside_capped(items: Sequence[Item], cartons: Sequence[Carton],
     return keep
 
 
+def _same_goods(item: Item) -> tuple:
+    """canonical_key without the ref: two items with this key are interchangeable."""
+    return canonical_key(item)[:-1]
+
+
+def _replicate(pc: PackedCarton, remaining: list[Item], cap: int | None
+               ) -> tuple[list[PackedCarton], list[Item]]:
+    """Clone a finished carton while `remaining` still holds its exact contents.
+
+    A clone is the same carton with interchangeable goods in the same
+    positions, so it is valid by construction: nothing is re-placed. This is
+    what makes long runs of identical items cheap.
+    """
+    need: dict[tuple, int] = {}
+    for p in pc.placements:
+        k = _same_goods(p.item)
+        need[k] = need.get(k, 0) + 1
+    # Tracked by POSITION in `remaining`, never by id(): io.py expands
+    # quantity by repeating the same Item object, so ids are not unique.
+    have: dict[tuple, list[int]] = {}
+    for idx, item in enumerate(remaining):
+        k = _same_goods(item)
+        if k in need:
+            have.setdefault(k, []).append(idx)
+    copies = min(len(have.get(k, ())) // n for k, n in need.items())
+    if cap is not None:
+        copies = min(copies, cap)
+    if copies <= 0:
+        return [], remaining
+    next_of = {k: iter(v) for k, v in have.items()}
+    clones: list[PackedCarton] = []
+    used: set[int] = set()
+    for _ in range(copies):
+        placements = []
+        for p in pc.placements:
+            idx = next(next_of[_same_goods(p.item)])
+            used.add(idx)
+            placements.append(Placement(item=remaining[idx], pos=p.pos,
+                                        dims=p.dims, orientation=p.orientation,
+                                        sequence=p.sequence))
+        clones.append(PackedCarton(carton=pc.carton, placements=placements))
+    return clones, [it for idx, it in enumerate(remaining) if idx not in used]
+
+
 def pack_one(ordering: Sequence[Item], cartons: Sequence[Carton],
              table: dict[tuple, tuple[int, ...]],
              caps: list[int | None] | None = None
@@ -399,13 +466,21 @@ def pack_one(ordering: Sequence[Item], cartons: Sequence[Carton],
         if best is None:
             return out, capped_out + remaining
         pc, left = best
+        if not left and rest:
+            # Without this a carton can never hold more than CHUNK items.
+            pc, rest = _top_up(pc, rest)
         out.append(pc)
         remaining = left + rest
         if caps[best_ci] is not None:
             caps[best_ci] -= 1
-            if caps[best_ci] == 0:
-                remaining = _set_aside_capped(remaining, cartons, table, caps,
-                                              capped_out)
+        if not left and remaining:
+            clones, remaining = _replicate(pc, remaining, caps[best_ci])
+            out.extend(clones)
+            if caps[best_ci] is not None:
+                caps[best_ci] -= len(clones)
+        if caps[best_ci] == 0:
+            remaining = _set_aside_capped(remaining, cartons, table, caps,
+                                          capped_out)
     return out, capped_out + remaining
 
 
@@ -441,19 +516,38 @@ def _empty_into(victim: PackedCarton, others: Sequence[PackedCarton]
 
     Largest items first, since they are the likeliest to fail.
     """
-    states = [state_from(pc) for pc in others]
+    free = 0
+    for pc in others:
+        if pc.carton.max_contents_mass is None:
+            free = None
+            break
+        free += pc.carton.max_contents_mass - pc.contents_mass
+    if free is not None and victim.contents_mass > free:
+        return None   # cannot fit by mass alone; skip the geometry
+
+    # States are rebuilt lazily: a carton already full by mass is skipped
+    # without replaying its placements, which was most of the solve time.
+    states: list[CartonState | None] = [None] * len(others)
+    mass = [pc.contents_mass for pc in others]
     items = sorted((p.item for p in victim.placements), key=lambda i: -i.volume)
     for item in items:
-        for state in states:
-            if not _admits(item, state.placements):
+        for k, pc in enumerate(others):
+            limit = pc.carton.max_contents_mass
+            if limit is not None and mass[k] + item.mass > limit:
                 continue
-            p = place(item, state)
+            if not _admits(item, pc.placements if states[k] is None
+                           else states[k].placements):
+                continue
+            if states[k] is None:
+                states[k] = state_from(pc)
+            p = place(item, states[k])
             if p is not None:
-                state.add(p)
+                states[k].add(p)
+                mass[k] += item.mass
                 break
         else:
             return None
-    return [state.packed() for state in states]
+    return [pc if st is None else st.packed() for pc, st in zip(others, states)]
 
 
 def _repack_tail(out: Sequence[PackedCarton], span: int,
