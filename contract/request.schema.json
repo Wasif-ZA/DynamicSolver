@@ -19,7 +19,7 @@
           "dims": { "type": "array", "items": { "type": "integer" }, "minItems": 3, "maxItems": 3,
                     "description": "w,d,h in mm, integers" },
           "mass": { "type": "integer", "description": "grams" },
-          "quantity": { "type": "integer", "minimum": 1, "default": 1 },
+          "quantity": { "type": "integer", "minimum": 1, "maximum": 10000, "default": 1 },
           "allowed_rotations": { "enum": ["any", "upright", "fixed"], "default": "any" },
           "dg_class": { "type": ["string", "null"], "default": null },
           "incompatible_with": { "type": "array", "items": { "type": "string" }, "default": [],
@@ -37,8 +37,9 @@
         "properties": {
           "sku": { "type": "string" },
           "inner_dims": { "type": "array", "items": { "type": "integer" }, "minItems": 3, "maxItems": 3 },
-          "tare_mass": { "type": "integer" },
-          "max_contents_mass": { "type": ["integer", "null"], "default": null }
+          "tare_mass": { "type": "integer", "minimum": 0 },
+          "max_contents_mass": { "type": ["integer", "null"], "minimum": 0, "default": null },
+          "maximum_boxes": { "type": ["integer", "null"], "minimum": 0, "default": null }
         }
       }
     }

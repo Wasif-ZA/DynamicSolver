@@ -51,7 +51,8 @@ at one and build against it.
 ```
 
 `order_id`, `items` (at least one) and `cartons` (at least one) are required. `time_budget_ms`
-defaults to 1200.
+defaults to 1200. It is a target, not a hard limit: one packing pass always completes, so orders of a few
+hundred items or more can take several times the budget ([BENCHMARK.md](../BENCHMARK.md)). Read `elapsed_ms` for the real time.
 
 ### Item
 
@@ -63,7 +64,7 @@ defaults to 1200.
 | `label` | string | `item_ref` | Display name |
 | `dims` | `[w, d, h]` mm | required | Three positive integers |
 | `mass` | g | required | Per item, 0 or more |
-| `quantity` | int | 1 | How many identical items |
+| `quantity` | int | 1 | How many identical items, 1 to 10000. Outside that range the request is refused with HTTP 422 |
 | `allowed_rotations` | `any` / `upright` / `fixed` | `any` | `upright` keeps the height vertical; `fixed` allows no rotation |
 | `dg_class` | string or null | null | Items with **different** classes never share a carton. Null conflicts with nothing |
 | `incompatible_with` | list of `item_ref` | `[]` | Items that may never share a carton with this one |

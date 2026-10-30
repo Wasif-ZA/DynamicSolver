@@ -14,6 +14,10 @@ from .domain import Carton, Item, Reject, Solution
 SOLVER_VERSION = "0.1.0"
 SCHEMA_VERSION = "1.0.0"
 DEFAULT_BUDGET_MS = 1200
+# One order line expands to this many items at most. A larger integer quantity
+# builds the item list before any time budget applies and hangs the request.
+MAX_QUANTITY = 10_000
+ROTATIONS = ("any", "upright", "fixed")
 
 
 class RequestError(ValueError):
@@ -90,7 +94,9 @@ def parse_request(payload: dict) -> tuple[list[Item], list[Carton],
     budget = payload.get("time_budget_ms", DEFAULT_BUDGET_MS)
     if not _is_int(budget) or budget < 1:
         raise RequestError("time_budget_ms must be an integer >= 1")
-    order_id = str(payload.get("order_id", ""))
+    order_id = payload.get("order_id", "")
+    if not isinstance(order_id, str):
+        raise RequestError("order_id must be a string")
 
     cartons: list[Carton] = []
     if not isinstance(payload["cartons"], list) or not isinstance(payload["items"], list):
@@ -120,8 +126,13 @@ def parse_request(payload: dict) -> tuple[list[Item], list[Carton],
             raise RequestError("every item must be an object")
         ref = str(raw.get("item_ref", "?"))
         quantity = raw.get("quantity", 1)
-        if not _is_int(quantity) or quantity < 1:
-            raise RequestError(f"item {ref}: quantity must be an integer >= 1")
+        if not _is_int(quantity) or not 1 <= quantity <= MAX_QUANTITY:
+            raise RequestError(
+                f"item {ref}: quantity must be an integer from 1 to {MAX_QUANTITY}")
+        rotations = raw.get("allowed_rotations", "any")
+        if rotations not in ROTATIONS:
+            raise RequestError(
+                f"item {ref}: allowed_rotations must be one of {', '.join(ROTATIONS)}")
         incompatible = _str_list(raw.get("incompatible_with", []))
         tags = _str_list(raw.get("tags", []))
         if incompatible is None or tags is None:
@@ -144,7 +155,7 @@ def parse_request(payload: dict) -> tuple[list[Item], list[Carton],
             dims=dims,
             mass=mass,
             label=str(raw.get("label", ref)),
-            allowed_rotations=str(raw.get("allowed_rotations", "any")),
+            allowed_rotations=rotations,
             dg_class=dg_class,
             incompatible_with=frozenset(incompatible),
             tags=tuple(tags),
