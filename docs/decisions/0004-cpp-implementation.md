@@ -1,6 +1,6 @@
 # ADR-0004: Write the solver in C++
 
-- **Status:** accepted
+- **Status:** superseded by [ADR-0005](0005-python-implementation.md)
 - **Date:** 2026-08-05
 
 ## Context
