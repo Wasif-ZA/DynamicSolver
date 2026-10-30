@@ -547,7 +547,7 @@ def _empty_into(victim: PackedCarton, others: Sequence[PackedCarton]
                 break
         else:
             return None
-    return [pc if st is None else st.packed() for pc, st in zip(others, states)]
+    return [pc if st is None else st.packed() for pc, st in zip(others, states, strict=True)]
 
 
 def _repack_tail(out: Sequence[PackedCarton], span: int,
