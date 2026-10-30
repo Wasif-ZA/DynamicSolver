@@ -1,507 +1,265 @@
 # The packing contract
 
-This is our interface to the rest of the project. The visualiser team and the portal team build
-against **this document**.
-
-We build the solver only ([ADR-0003](decisions/0003-solver-only-scope.md)), so this specification is
-our real deliverable to the other teams. A change here changes someone else's sprint.
+Our interface to the rest of the project. The Portal and visualiser teams build against **this
+document** and the schemas in [`contract/`](../contract/) (`request.schema.json`,
+`solution.schema.json`). We build the solver only
+([ADR-0003](decisions/0003-solver-only-scope.md)), so a change here changes someone else's sprint.
 
 ## For the visualiser team, in short
 
-You need three things out of a response and can ignore the rest:
+1. `cartons[]` has one entry per physical box used, with its `inner_dims`, so you know how big to
+   draw the box.
+2. `cartons[].placements[]` is every item in that box: `position` is the corner it sits at and
+   `dims` is its size **as placed**, rotation already applied. Draw a cuboid at `position` of size
+   `dims`. That is the whole rendering job.
+3. `placements[].sequence` is the packing order **within that carton**, starting at 0. Sort by it
+   and reveal one item at a time for the step-by-step view.
 
-1. `containers[]` is one entry per physical box used. Each carries its `interior` dimensions, so you
-   know how big to draw the room.
-2. `containers[].placements[]` is every item in that box, with `position` (the corner it sits at)
-   and `size` (how big it is **as placed**, rotation already applied). Draw a cuboid at `position`
-   of `size`. That is the whole rendering job.
-3. `placements[].step` is a global 1-based pack order across the whole response. Sort by `step` and
-   reveal one item at a time and you have the step-by-step player the client asked for.
-
-**You never do rotation maths.** We resolve it and hand you final dimensions.
-
-The [worked examples](#worked-examples) below are complete and real. Copy one into a file, point
-your renderer at it, and build the entire visualiser before our solver places a single item.
+You never do rotation maths. The [fixtures](#fixtures) are real solver output: point your renderer
+at one and build against it.
 
 ## Units and axes
 
-**All lengths are integer millimetres. All weights are integer grams.** No floats, no unit
-suffixes. See [ADR-0002](decisions/0002-units-and-coordinates.md).
-
-The origin `(0,0,0)` is the **inside** bottom-left-back corner of the box.
+**Lengths are integer millimetres, masses are integer grams**
+([ADR-0002](decisions/0002-units-and-coordinates.md)). **z is up**
+([ADR-0006](decisions/0006-z-up-axes.md)).
 
 ```
-        y (height, up)
+        z (height, up)
         |
         |
         +--------- x (width)
        /
-      z (depth, toward viewer)
+      y (depth)
 ```
 
-`position` is the corner of the item nearest the origin, never its centre. An item at
-`position: {x:0, y:0, z:0}` with `size: {width:150, height:100, depth:50}` fills `x` 0 to 150,
-`y` 0 to 100, `z` 0 to 50.
-
-Box dimensions are **interior usable space**, wall thickness already excluded. The client flagged
-this and it is still open with him, so treat it as an assumption we wrote down rather than a fact he
-confirmed. See [open question 2](client-requirements.md#open-questions-for-the-client).
-
-**Volumes are cubic millimetres and do not fit in 32 bits.** A shipping container is roughly
-12000 x 2400 x 2600 mm, which is about 7.5e10. Any volume is a 64-bit integer. This has bitten
-people before.
+- The origin `[0, 0, 0]` is the inside bottom corner of the carton (`"origin": "min_corner"`).
+- A `position` is the item's corner nearest the origin, never its centre. An item at `[0, 0, 0]`
+  with `dims` `[150, 100, 50]` fills x 0 to 150, y 0 to 100 and z 0 to 50.
+- Every size is `[x, y, z]`, which is `[width, depth, height]`.
+- Carton sizes are **inside** dimensions: the usable space.
 
 ## Request
 
-```jsonc
+```json
 {
-  "requestId": "ord-10432",     // echoed back, for correlating logs
-  "mode": "standard",           // standard | fluid | own_packaging
-  "boxes":  [ /* box types the warehouse stocks */ ],
-  "items":  [ /* what needs to ship */ ],
-  "rules":  { "incompatibleGroups": [ /* groups that cannot share a box */ ] }
+  "order_id": "ord-10432",
+  "time_budget_ms": 1200,
+  "items":   [ ... ],
+  "cartons": [ ... ]
 }
 ```
 
-Required: `requestId`, `boxes` (at least one), `items` (at least one). `mode` defaults to
-`standard`, which is the only one implemented.
-
-### Box
-
-A box is a **type**, not a physical box. The solver may use a type many times, and each physical use
-appears as its own entry in `containers[]`.
-
-| Field | Type | Required | Meaning |
-|---|---|---|---|
-| `id` | string | yes | Unique among boxes in this request |
-| `name` | string | no | Human label, for display. Not used by the solver |
-| `interior` | dimensions | yes | Usable space **inside**, wall thickness already excluded |
-| `maxWeight` | int (g) | no | Gross limit, **including** `tareWeight`. Omit for no limit |
-| `tareWeight` | int (g) | no, default 0 | Weight of the empty box. Counts toward `maxWeight` |
-| `available` | int or null | no, default null | How many are on hand. `null` means effectively unlimited, the normal case |
-
-A `dimensions` object is `{ "width": int, "height": int, "depth": int }`, all greater than zero.
+`order_id`, `items` (at least one) and `cartons` (at least one) are required. `time_budget_ms`
+defaults to 1200.
 
 ### Item
 
-An item is a **line**, not a unit. `quantity: 3` means three identical units, and each appears
-separately in the response.
+`quantity: 3` means three identical items, and each is placed separately.
 
-| Field | Type | Required | Meaning |
+| Field | Type | Default | Meaning |
 |---|---|---|---|
-| `id` | string | yes | Unique among items. Identifies the **line** |
-| `reference` | string | no | The warehouse's own SKU. Passed through untouched |
-| `name` | string | no | Human label for display |
-| `size` | dimensions | yes | Per unit |
-| `weight` | int (g) | no, default 0 | **Per unit**, not per line |
-| `quantity` | int | no, default 1 | How many identical units |
-| `groups` | string[] | no, default [] | Free-text tags, for example `DG-3` or `keyboards` |
+| `item_ref` | string | required | The item's code, echoed in every placement |
+| `label` | string | `item_ref` | Display name |
+| `dims` | `[w, d, h]` mm | required | Three positive integers |
+| `mass` | g | required | Per item, 0 or more |
+| `quantity` | int | 1 | How many identical items |
+| `allowed_rotations` | `any` / `upright` / `fixed` | `any` | `upright` keeps the height vertical; `fixed` allows no rotation |
+| `dg_class` | string or null | null | Items with **different** classes never share a carton. Null conflicts with nothing |
+| `incompatible_with` | list of `item_ref` | `[]` | Items that may never share a carton with this one |
+| `tags` | list of strings | `[]` | Passed through to the output untouched |
 
-### Rules
+### Carton
 
-| Field | Type | Meaning |
-|---|---|---|
-| `incompatibleGroups` | string[][] | Each entry is a set of groups where **no two members may share a box** |
-| `keepTogether` | string[] | Groups whose members should share a box where possible. A preference: the solver breaks it rather than failing the order |
+A carton is a **type**. The solver may use it several times, and each use is its own entry in
+the response.
 
-Rules are expressed over **groups**, never over item IDs. That is what makes the mechanism generic
-enough for both dangerous goods classes and the client's "keyboards in one box, headphones in
-another" example. It is a core requirement, not a stretch goal
-([R1](client-requirements.md#r1-packing-groups-core)).
+| Field | Type | Default | Meaning |
+|---|---|---|---|
+| `sku` | string | required | The carton type's code |
+| `inner_dims` | `[w, d, h]` mm | required | Usable space inside |
+| `tare_mass` | g | 0 | Weight of the empty carton. Counted in `total_mass` |
+| `max_contents_mass` | g or null | null | Limit on the **contents**. Tare is not counted against it. Null means no limit |
+| `maximum_boxes` | int or null | null | Most times this carton type may be used in one order (box stock). Null means unlimited; 0 means never use it ([ADR-0008](decisions/0008-enforce-maximum-boxes.md)) |
 
 ## Response
 
-```jsonc
+```json
 {
-  "requestId": "ord-10432",
-  "status": "solved",           // solved | partial | rejected
-  "mode": "standard",
-  "containers": [ /* one per physical box used */ ],
-  "unpacked":   [ /* anything we could not place, each with a reason */ ],
-  "metrics":    { "solveTimeMs": 12, "containerCount": 1, "volumeUtilisation": 0.3 },
-  "warnings":   [ /* non-fatal notes for humans */ ]
+  "schema_version": "1.0.0",
+  "solution_id": "sol_...",
+  "order_id": "ord-10432",
+  "solver": { "version": "0.1.0", "seed": 1103..., "mode": "rigid",
+              "time_budget_ms": 1200, "elapsed_ms": 1, "tier": 1 },
+  "coordinate_system": { "up": "z", "handedness": "right", "origin": "min_corner" },
+  "units": { "length": "mm", "mass": "g" },
+  "metrics": { "carton_count": 1, "fill_rate": 0.3, "total_mass": 1400 },
+  "cartons": [ ... ],
+  "rejects": [ ... ]
 }
 ```
 
-`status` is **derived**, never set independently:
-
-| status | meaning |
+| Field | Meaning |
 |---|---|
-| `solved` | every unit placed, `unpacked` empty |
-| `partial` | some placed, some not |
-| `rejected` | nothing placed |
+| `solver.seed` | Derived from the request content. Same request, same seed, same layout |
+| `solver.elapsed_ms` | Time inside the solver. The client's bar is 1000 to 2000 ms for one order |
+| `solver.tier` | `1` greedy2. `2` an improved answer from Further Optimise ([ADR-0009](decisions/0009-further-optimise.md)). `0` is reserved for a future cache |
+| `metrics.fill_rate` | Item volume over carton volume, 0 to 1. Reported, never optimised |
+| `metrics.total_mass` | Every item plus every carton's tare, in grams |
 
-The client's instruction was "just reject the order". We return the detail rather than a bare error
-so the portal can show *which* item failed and *why*. What to do about it is the portal's call.
+### Carton
 
-### Container
-
-One **physical** box. Two uses of the same type are two entries.
-
-| Field | Type | Meaning |
-|---|---|---|
-| `instanceId` | string | Unique per physical box, for example `B-SMALL#1` |
-| `boxId` | string | The box type this was drawn from |
-| `name` | string | Box type's label, copied through |
-| `interior` | dimensions | Copied from the box type, so a consumer never cross-references the request |
-| `placements` | placement[] | Everything in this box |
-| `utilisation` | object | `volumeUsed`, `volumeTotal`, `volumeRatio`, `weightUsed` (gross, includes tare), `weightLimit` |
+| Field | Meaning |
+|---|---|
+| `carton_id` | `c1`, `c2`, ... in the order the cartons were filled |
+| `sku`, `inner_dims`, `tare_mass` | Copied from the carton type, so you never cross-reference the request |
+| `contents_mass` | Items only, in grams |
+| `fill_rate` | This carton's item volume over its own volume |
+| `centre_of_mass` | `[x, y, z]` in mm, carton-local |
+| `placements` | Everything in this carton |
 
 ### Placement
 
-| Field | Type | Meaning |
-|---|---|---|
-| `step` | int | **Global** 1-based pack order across the whole response, not per container |
-| `itemId` | string | The item line |
-| `unit` | int | Which unit of that line, 1-based. A line with `quantity: 3` produces units 1, 2, 3 |
-| `reference`, `name` | string | Copied through for display and scanning |
-| `position` | position | Corner nearest the origin: `{x, y, z}`, all at least 0 |
-| `size` | dimensions | **As placed**, rotation already applied |
-| `rotation` | enum | `WHD`, `WDH`, `HWD`, `HDW`, `DWH`, `DHW`. How the item's original width, height, depth map onto placed x, y, z. `WHD` is unrotated |
-
-`rotation` is informational. `size` already reflects it, so a renderer can ignore the field
-entirely. It exists so a packer can be told "turn it on its side".
-
-`step` numbers must be `1..n` across the whole response with no gaps and no repeats.
-
-### Unpacked
-
-| Field | Type | Meaning |
-|---|---|---|
-| `itemId`, `unit` | string, int | Which unit failed |
-| `reference` | string | SKU, for display |
-| `reason` | enum | See below |
-| `detail` | string | Human-readable explanation for the portal to show a packer |
-
-| reason | meaning |
+| Field | Meaning |
 |---|---|
-| `NO_BOX_FITS` | larger than the interior of every box type, in any orientation |
-| `INCOMPATIBLE` | it fits, but group rules bar it from every box it could have shared |
-| `EXCEEDS_WEIGHT` | fits by volume but would breach a weight limit |
+| `placement_id` | `p<carton number>_<sequence>`, for example `p1_0` |
+| `item_ref`, `label`, `mass`, `tags` | Copied from the item |
+| `position` | `[x, y, z]`, the corner nearest the origin |
+| `dims` | `[x, y, z]` **as placed**, rotation already applied |
+| `orientation` | 0 to 5: which of the item's `[w, d, h]` went to each axis. Informational; `dims` already reflects it |
+| `sequence` | Physical packing order within the carton, from 0. Anything an item rests on has a lower number |
 
-### Metrics
+| `orientation` | Placed `dims` |
+|---|---|
+| 0 | `[w, d, h]`, as given |
+| 1 | `[w, h, d]` |
+| 2 | `[d, w, h]` |
+| 3 | `[d, h, w]` |
+| 4 | `[h, w, d]` |
+| 5 | `[h, d, w]` |
 
-`solveTimeMs` (wall clock inside the solver; the client's bar is 1000 to 2000 ms for one order),
-`containerCount`, `volumeUtilisation` (0 to 1, our headline efficiency number), and `algorithm`
-(which strategy produced this, so we can compare approaches on the same input).
+### Rejects
+
+One entry per item that could not be packed. A rejected item never stops the rest of the order
+packing: the client said to reject what cannot be packed (R4), and per-item reasons let the
+Portal tell the packer which item failed and why.
+
+| `reason_code` | Meaning |
+|---|---|
+| `NO_FITTING_CARTON` | Too big for every carton type in every allowed orientation, or fits but is too heavy for every carton. The message says which |
+| `UNPLACEABLE` | Fits a carton type, but every type it fits has reached its `maximum_boxes` limit |
+| `INVALID_DIMENSIONS` | `dims` is not three positive integers |
+| `MISSING_MASS` | `mass` is missing or negative |
+| `UNKNOWN_DG_CLASS` | Reserved in the schema. Not produced today |
+
+A request that is unusable as a whole (no cartons, invalid carton dimensions, an invalid
+`maximum_boxes`) is refused with HTTP 422 instead.
+
+## The API
+
+| Route | Takes |
+|---|---|
+| `GET /v1/health` | Solver and schema versions |
+| `POST /v1/solve` | A request in this contract's shape |
+| `POST /v1/solve/portal` | A request in the Portal's own field names, translated by `portal.py` |
+
+Both solve routes accept **`?optimise=true`**, the "Further Optimise" button. It is slower (up to
+30 seconds) and may return a smaller carton with `solver.tier: 2`. See
+[ADR-0009](decisions/0009-further-optimise.md).
+
+The Portal backend in the monorepo calls `engine.solve` directly with a request it builds itself
+(`solver_adapter.py`), so it does not use the `/v1/solve/portal` route.
 
 ## Worked examples
 
-Complete and consistent. Use them as fixtures.
+### 1. One carton, with a rotation
 
-### 1. Simple order, solved
-
-Two paperbacks and a mug into one small carton.
+Two paperbacks and a boxed mug. This is real solver output.
 
 **Request**
 
 ```json
 {
-  "requestId": "ord-10432",
-  "mode": "standard",
-  "boxes": [
-    {
-      "id": "B-SMALL",
-      "name": "Small carton",
-      "interior": { "width": 300, "height": 200, "depth": 150 },
-      "maxWeight": 15000,
-      "tareWeight": 250,
-      "available": null
-    }
-  ],
+  "order_id": "ord-10432",
   "items": [
-    {
-      "id": "I-BOOK",
-      "reference": "SKU-BOOK-01",
-      "name": "Paperback",
-      "size": { "width": 150, "height": 100, "depth": 50 },
-      "weight": 400,
-      "quantity": 2
-    },
-    {
-      "id": "I-MUG",
-      "reference": "SKU-MUG-01",
-      "name": "Ceramic mug, boxed",
-      "size": { "width": 100, "height": 100, "depth": 120 },
-      "weight": 350,
-      "quantity": 1
-    }
+    { "item_ref": "SKU-BOOK-01", "label": "Paperback", "dims": [150, 100, 50], "mass": 400, "quantity": 2 },
+    { "item_ref": "SKU-MUG-01", "label": "Ceramic mug, boxed", "dims": [100, 120, 100], "mass": 350 }
+  ],
+  "cartons": [
+    { "sku": "SMALL", "inner_dims": [300, 150, 200], "tare_mass": 250, "max_contents_mass": 15000 }
   ]
 }
 ```
 
-**Response**
+**Response** (the `solver`, `coordinate_system` and `units` blocks are as shown above)
 
 ```json
 {
-  "requestId": "ord-10432",
-  "status": "solved",
-  "mode": "standard",
-  "containers": [
+  "metrics": { "carton_count": 1, "fill_rate": 0.3, "total_mass": 1400 },
+  "cartons": [
     {
-      "instanceId": "B-SMALL#1",
-      "boxId": "B-SMALL",
-      "name": "Small carton",
-      "interior": { "width": 300, "height": 200, "depth": 150 },
+      "carton_id": "c1", "sku": "SMALL", "inner_dims": [300, 150, 200],
+      "tare_mass": 250, "contents_mass": 1150, "fill_rate": 0.3, "centre_of_mass": [171, 61, 41],
       "placements": [
-        {
-          "step": 1,
-          "itemId": "I-BOOK",
-          "unit": 1,
-          "reference": "SKU-BOOK-01",
-          "name": "Paperback",
-          "position": { "x": 0, "y": 0, "z": 0 },
-          "size": { "width": 150, "height": 100, "depth": 50 },
-          "rotation": "WHD"
-        },
-        {
-          "step": 2,
-          "itemId": "I-BOOK",
-          "unit": 2,
-          "reference": "SKU-BOOK-01",
-          "name": "Paperback",
-          "position": { "x": 150, "y": 0, "z": 0 },
-          "size": { "width": 150, "height": 100, "depth": 50 },
-          "rotation": "WHD"
-        },
-        {
-          "step": 3,
-          "itemId": "I-MUG",
-          "unit": 1,
-          "reference": "SKU-MUG-01",
-          "name": "Ceramic mug, boxed",
-          "position": { "x": 0, "y": 100, "z": 0 },
-          "size": { "width": 100, "height": 100, "depth": 120 },
-          "rotation": "WHD"
-        }
-      ],
-      "utilisation": {
-        "volumeUsed": 2700000,
-        "volumeTotal": 9000000,
-        "volumeRatio": 0.3,
-        "weightUsed": 1400,
-        "weightLimit": 15000
-      }
+        { "placement_id": "p1_0", "item_ref": "SKU-MUG-01", "label": "Ceramic mug, boxed",
+          "position": [0, 0, 0], "dims": [100, 120, 100], "orientation": 0, "mass": 350, "sequence": 0, "tags": [] },
+        { "placement_id": "p1_1", "item_ref": "SKU-BOOK-01", "label": "Paperback",
+          "position": [100, 0, 0], "dims": [150, 100, 50], "orientation": 0, "mass": 400, "sequence": 1, "tags": [] },
+        { "placement_id": "p1_2", "item_ref": "SKU-BOOK-01", "label": "Paperback",
+          "position": [250, 0, 0], "dims": [50, 150, 100], "orientation": 4, "mass": 400, "sequence": 2, "tags": [] }
+      ]
     }
   ],
-  "unpacked": [],
-  "metrics": {
-    "solveTimeMs": 12,
-    "containerCount": 1,
-    "volumeUtilisation": 0.3,
-    "algorithm": "first-fit-decreasing"
-  }
+  "rejects": []
 }
 ```
 
-Worth checking by hand, because it shows what "correct" means. The two books sit side by side along
-`x` and occupy `y` 0 to 100. The mug sits above them at `y` 100 to 200. Nothing overlaps, nothing
-exceeds the interior, and `weightUsed` is 400 + 400 + 350 + 250 tare = 1400 g.
+Worth checking by hand. The mug and the first book sit side by side on the floor. The second book
+would not fit flat in the 50 mm left on x, so it is turned on its side: `orientation` 4 maps its
+`[150, 100, 50]` to `[50, 150, 100]`. Nothing overlaps, nothing pokes out, and `total_mass` is
+400 + 400 + 350 + 250 tare = 1400 g.
 
-### 2. Incompatible groups force a second box
+### 2. Box stock runs out
 
-Two dangerous goods items in different classes. They would fit in one carton easily, but may not
-legally share it.
-
-**Request**
+Three totes, each needing its own SMALL carton, but only two SMALL cartons in stock
+(`"maximum_boxes": 2`). The result is two cartons and one reject:
 
 ```json
-{
-  "requestId": "ord-10433",
-  "mode": "standard",
-  "boxes": [
-    {
-      "id": "B-SMALL",
-      "name": "Small carton",
-      "interior": { "width": 300, "height": 200, "depth": 150 },
-      "maxWeight": 15000,
-      "tareWeight": 250,
-      "available": null
-    }
-  ],
-  "items": [
-    {
-      "id": "I-BLEACH",
-      "reference": "SKU-CLEAN-08",
-      "name": "Bleach concentrate 1L",
-      "size": { "width": 100, "height": 100, "depth": 200 },
-      "weight": 1200,
-      "quantity": 1,
-      "groups": ["DG-8"]
-    },
-    {
-      "id": "I-PEROXIDE",
-      "reference": "SKU-CLEAN-05",
-      "name": "Peroxide solution 1L",
-      "size": { "width": 100, "height": 100, "depth": 200 },
-      "weight": 1100,
-      "quantity": 1,
-      "groups": ["DG-5"]
-    }
-  ],
-  "rules": {
-    "incompatibleGroups": [["DG-5", "DG-8"]]
-  }
-}
+"rejects": [
+  { "item_ref": "SKU-TOTE", "reason_code": "UNPLACEABLE",
+    "message": "Fits, but every carton type it fits has reached its maximum_boxes limit" }
+]
 ```
 
-**Response** (abbreviated: the second container mirrors the first)
+### Fixtures
 
-```json
-{
-  "requestId": "ord-10433",
-  "status": "solved",
-  "mode": "standard",
-  "containers": [
-    {
-      "instanceId": "B-SMALL#1",
-      "boxId": "B-SMALL",
-      "name": "Small carton",
-      "interior": { "width": 300, "height": 200, "depth": 150 },
-      "placements": [
-        {
-          "step": 1,
-          "itemId": "I-BLEACH",
-          "unit": 1,
-          "reference": "SKU-CLEAN-08",
-          "name": "Bleach concentrate 1L",
-          "position": { "x": 0, "y": 0, "z": 0 },
-          "size": { "width": 100, "height": 200, "depth": 100 },
-          "rotation": "WDH"
-        }
-      ],
-      "utilisation": {
-        "volumeUsed": 2000000,
-        "volumeTotal": 9000000,
-        "volumeRatio": 0.222,
-        "weightUsed": 1450,
-        "weightLimit": 15000
-      }
-    },
-    {
-      "instanceId": "B-SMALL#2",
-      "boxId": "B-SMALL",
-      "name": "Small carton",
-      "interior": { "width": 300, "height": 200, "depth": 150 },
-      "placements": [
-        {
-          "step": 2,
-          "itemId": "I-PEROXIDE",
-          "unit": 1,
-          "reference": "SKU-CLEAN-05",
-          "name": "Peroxide solution 1L",
-          "position": { "x": 0, "y": 0, "z": 0 },
-          "size": { "width": 100, "height": 200, "depth": 100 },
-          "rotation": "WDH"
-        }
-      ],
-      "utilisation": {
-        "volumeUsed": 2000000,
-        "volumeTotal": 9000000,
-        "volumeRatio": 0.222,
-        "weightUsed": 1350,
-        "weightLimit": 15000
-      }
-    }
-  ],
-  "unpacked": [],
-  "metrics": {
-    "solveTimeMs": 8,
-    "containerCount": 2,
-    "volumeUtilisation": 0.222,
-    "algorithm": "first-fit-decreasing"
-  },
-  "warnings": [
-    "Two containers used for two items. Groups DG-5 and DG-8 are incompatible, so they cannot share a box."
-  ]
-}
-```
-
-This example also shows rotation. The bottle is 100 x 100 x 200 in the request, but 200 mm of depth
-will not fit a 150 mm deep carton, so it is stood upright: placed size 100 x 200 x 100, rotation
-`WDH` (original depth became height). The renderer just draws the placed size.
-
-### 3. Nothing fits, rejected
-
-**Request**
-
-```json
-{
-  "requestId": "ord-10434",
-  "mode": "standard",
-  "boxes": [
-    {
-      "id": "B-SMALL",
-      "name": "Small carton",
-      "interior": { "width": 300, "height": 200, "depth": 150 },
-      "maxWeight": 15000,
-      "tareWeight": 250,
-      "available": null
-    }
-  ],
-  "items": [
-    {
-      "id": "I-PALLET",
-      "reference": "SKU-BULK-99",
-      "name": "Pallet of floor tiles",
-      "size": { "width": 1200, "height": 800, "depth": 1000 },
-      "weight": 450000,
-      "quantity": 1
-    }
-  ]
-}
-```
-
-**Response**
-
-```json
-{
-  "requestId": "ord-10434",
-  "status": "rejected",
-  "mode": "standard",
-  "containers": [],
-  "unpacked": [
-    {
-      "itemId": "I-PALLET",
-      "unit": 1,
-      "reference": "SKU-BULK-99",
-      "reason": "NO_BOX_FITS",
-      "detail": "Item is 1200x800x1000 mm. The largest box interior available is 300x200x150 mm (Small carton), in any orientation."
-    }
-  ],
-  "metrics": {
-    "solveTimeMs": 1,
-    "containerCount": 0,
-    "volumeUtilisation": 0,
-    "algorithm": "first-fit-decreasing"
-  }
-}
-```
+`contract/fixtures/` holds complete solution documents for the common cases, validated in CI:
+a single item, a full carton, several cartons, a dangerous-goods split, incompatible items, partial
+and total rejects, rotation-locked items, a large order, a mass-limited order and a 250-item bulk
+order. `contract/fixtures_request_example.json` is an example request.
 
 ## Invariants
 
-Anything claiming to implement this contract must satisfy all of these. They are the test list.
+Any solution must satisfy all of these. They are the test list.
 
-1. **In bounds.** For every placement and every axis, `position + size` is at most the container
-   interior on that axis.
-2. **No overlap.** No two placements in the same container share volume. Two axis-aligned boxes
-   overlap only if they overlap on *all three* axes. **Touching faces are not an overlap**: an item
-   ending at `x = 150` and the next starting at `x = 150` is correct packing.
-3. **Conservation.** Every unit in the request appears exactly once in the response, either as a
-   placement or in `unpacked`. Never both, never neither.
-4. **Steps.** `step` values across the whole response are exactly `1..n`, no gaps, no repeats.
-5. **Status agrees.** `solved` when `unpacked` is empty and something was placed; `rejected` when
-   nothing was placed; `partial` otherwise.
-6. **Rules hold.** No container holds two units whose groups appear together in an
-   `incompatibleGroups` entry.
-7. **Weight.** For every container, `weightUsed` equals the sum of contents plus the box's tare.
+1. **In bounds.** For every placement, `position + dims` is within `inner_dims` on every axis.
+2. **No overlaps.** No two placements in one carton share volume. Touching faces are fine.
+3. **Supported.** Every item is on the floor or has at least 70% of its base resting on items
+   below it.
+4. **Conservation.** Every item in the request, after `quantity` is expanded, appears exactly once:
+   in a placement or in `rejects`.
+5. **Mass.** Every carton's `contents_mass` is within its `max_contents_mass`.
+6. **Conflicts.** No carton holds two items with different `dg_class` values, or two items that
+   name each other in `incompatible_with`.
+7. **Box stock.** No carton type appears more times than its `maximum_boxes`.
+8. **Sequence.** Within each carton, `sequence` runs 0 to n-1 with no gaps.
+9. **Deterministic.** The same request gives the same layout, except with `?optimise=true`.
 
 ## Changing this document
 
-1. **Additive changes are cheap.** A new optional field breaks nobody. Just do it.
+1. **Additive changes are cheap.** A new optional field breaks nobody.
 2. **Breaking changes need a heads-up.** Renaming or removing a field, or changing a meaning, goes
-   to the visualiser and portal teams **before** it is merged. Post in the group chat and give them
-   a sprint to adapt.
-3. **Update the worked examples in the same commit.** An example that contradicts the spec is worse
-   than no example, because someone is building against it right now.
-4. **Record the reasoning** in [`decisions/`](decisions/) if it settles a real question.
+   to the Portal and visualiser teams **before** it is merged.
+3. **Update the schemas and fixtures in the same commit.** An example that contradicts the spec is
+   worse than none, because someone is building against it.
+4. **Record the reasoning** in [`decisions/`](decisions/) when it settles a real question.
