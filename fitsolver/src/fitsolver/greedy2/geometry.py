@@ -1,16 +1,9 @@
-"""Geometry core for greedy2. All integer arithmetic: no floats, no epsilons.
+"""Geometry core for greedy2. Integer arithmetic only: no floats, no epsilons.
 
-This is greedy2's own copy of the v1 geometry helpers, deliberately duplicated
-rather than imported. v1's geometry.py is frozen, so copying is what lets
-greedy2 change candidate generation in later phases without any risk of
-altering v1's output.
-
-Phase 2 changed one thing here: candidate points that nothing can ever be
-placed at are no longer returned.
-
-Phase 3 adds pre-checks that are exact rather than approximate, so they only
-ever skip work that was provably going to fail. Orientation, overlap and
-support are still v1's, unchanged.
+greedy2's own copy of the v1 helpers, duplicated rather than imported so that
+v1 stays frozen. Differences from v1: dead candidate points are never returned,
+and exact O(1) pre-checks skip work that was certain to fail. Orientation,
+overlap and support rules are unchanged from v1. See DESIGN_NOTES.md.
 """
 from __future__ import annotations
 
@@ -26,7 +19,12 @@ _PERMS: tuple[tuple[int, int, int], ...] = (
 
 
 def orientations(item: Item) -> list[tuple[int, tuple[int, int, int]]]:
-    """(orientation_index, rotated_dims) pairs permitted for this item."""
+    """(orientation_index, rotated_dims) pairs permitted for this item.
+
+    Returned in _PERMS order, so orientation 0 (the dims as typed) is tried
+    first. Trying them in a shape-based order instead was measured and
+    rejected: see DESIGN_NOTES.md, "What did not work".
+    """
     w, d, h = item.dims
     base = (w, d, h)
     if item.allowed_rotations == "fixed":
