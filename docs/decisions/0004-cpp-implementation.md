@@ -3,6 +3,11 @@
 - **Status:** superseded by [ADR-0005](0005-python-implementation.md)
 - **Date:** 2026-08-05
 
+> **Superseded.** The team stayed in Python: no C++ was ever written, and the repository holds the
+> Python package `fitsolver`. The decision is recorded in
+> [ADR-0005](0005-python-implementation.md) (dynamic-fit ADR-0005 is dated 2026-08-25), and was
+> carried into the 10 Sep presentation planning meeting. The text below is kept unchanged as the original argument.
+
 ## Context
 
 The solver is the whole of our scope ([ADR-0003](0003-solver-only-scope.md)). Its job is geometry
