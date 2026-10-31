@@ -7,6 +7,10 @@ it are badly garbled. Anything below marked **[unconfirmed]** is our reading of 
 not something the client clearly said. Do not quote the transcript in a report. The client is back
 in two weeks, so the [open questions](#open-questions-for-the-client) are what we ask him.
 
+**Updated 2026-10-30.** R7 and R8 and the changes to R5 and the out-of-scope list came after the
+session, from the Portal's box data and the client's challenge order. The decisions they led to are
+in [`decisions/`](decisions/README.md).
+
 ## The job
 
 Given items to ship and the box types a warehouse stocks, decide which boxes to use and where each
@@ -61,7 +65,7 @@ bare error, so the portal can tell the packer which item failed and why. Confirm
 ### R5. Inputs
 
 - **Boxes.** A list. Each has width, height, depth, a maximum weight, and a tare weight, which is
-  the weight of the empty box itself.
+  the weight of the empty box itself. Each box type also has a stock count, `MaximumBoxes`. See R7.
 - **Items.** Each has a reference or ID, dimensions, and weight.
 - Some additional reference data, not specified further.
 
@@ -83,6 +87,23 @@ The concrete extension he wants to see is **modes**:
 We implement standard mode. The architecture must make the other two obvious drop-ins. That is what
 he means by extensibility, and it is the cheapest way to score against his stated priority.
 
+### R7. Box stock limits
+
+Each box type in the Portal has `MaximumBoxes`: how many of that box are in stock. A layout that
+needs more boxes than the warehouse has is not usable, so the solver never uses a box type more
+often than its limit. Items left over when stock runs out are rejected with a clear reason.
+See [ADR-0008](decisions/0008-enforce-maximum-boxes.md).
+
+### R8. Cost: box price and packing time
+
+The client's challenge order (October 2026) put a price on the result: 300 pesos per P200, 500 per
+P300, 750 per P500, and 1 peso per second of packing time. So the smallest box that fits matters,
+not just the fewest boxes, as long as finding it does not take too long.
+
+The normal solve stays fast and aims for fewest boxes. An opt-in "Further Optimise" button spends
+up to 30 seconds looking for one smaller box. See
+[ADR-0009](decisions/0009-further-optimise.md).
+
 ## Priorities, in his order
 
 1. **Efficiency.** The main thing on the solver side.
@@ -101,8 +122,11 @@ The client ruled these out himself.
 |---|---|
 | Auth and access control | Robust access control already exists on their side. Access is at the level of the model as a whole. |
 | Fragile / this-way-up | "Not really a consideration." Fragile items do not get packed alongside other things in reality, they are handled separately. He called it out of scope but "would be really cool to see". Stretch goal at best. |
-| Box weight limits | Real rule, and a 1 kg empty box eats into it. But they are not running into it yet. We model the fields, we do not enforce them. |
 | Rate limiting, throttling | See R3. |
+
+**Weight limits are now enforced.** He first said they were not hitting the limit, so they were
+out of scope. The solver enforces each box's limit on its **contents** today. Whether the empty
+box's own weight should count against the limit, as he described, is still to be confirmed.
 
 ## Assumptions he handed us
 
@@ -137,8 +161,8 @@ Two views, both wanted:
 2. **Step by step**, item one, then item two on top of it. He called this "really beautiful" and a
    student compared it to an instruction manual. This is the differentiator.
 
-So our response carries a global `step` ordering on every placement, and dimensions **as placed**
-with rotation already resolved, so the visualiser never does geometry maths. See
+So every placement carries a `sequence`, its packing order within its box, and dimensions **as
+placed** with rotation already resolved, so the visualiser never does geometry maths. See
 [`contract.md`](contract.md).
 
 The visualiser gets its own dedicated page rather than being embedded in the portal. His words: "for

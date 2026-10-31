@@ -87,6 +87,12 @@ def _grams(kg: object, where: str, allow_negative: bool = True) -> int:
     return grams
 
 
+def _group(value: object, where: str) -> str | None:
+    if value is not None and not isinstance(value, str):
+        raise PortalRequestError(f"{where}: expected a string or null")
+    return value
+
+
 def _list(payload: dict, key: str) -> list:
     value = payload.get(key)
     if not isinstance(value, list) or not value:
@@ -115,23 +121,28 @@ def to_contract(payload: object) -> dict:
             "mass": _grams(_require(i, "weight", where), f"{where}.weight"),
             # Portal's one grouping field is segregation (R1). Passed through
             # as-is: "" and None are both falsy, so neither constrains packing.
-            "dg_class": i.get("box_group"),
+            "dg_class": _group(i.get("box_group"), f"{where}.box_group"),
         })
 
     cartons = []
     for n, b in enumerate(_list(payload, "boxes")):
         where = f"boxes[{n}]"
+        sku = _text(_require(b, "box_reference", where), f"{where}.box_reference")
+        # Portal sends no tare. UNCONFIRMED: the client said a 1kg empty
+        # box eats into the limit (client-requirements.md:104), so 0
+        # overstates capacity.
+        tare = _grams(b.get("tare_weight", 0), f"{where}.tare_weight",
+                      allow_negative=False)
+        gross = _grams(_require(b, "max_weight", where), f"{where}.max_weight",
+                       allow_negative=False)
+        if gross < tare:
+            raise PortalRequestError(f"{where}: max_weight is below tare_weight")
+        # max_weight is gross (contents plus tare), per docs/contract.md.
         cartons.append({
-            "sku": _text(_require(b, "box_reference", where), f"{where}.box_reference"),
+            "sku": sku,
             "inner_dims": _dims(b, where),
-            # Portal sends no tare. UNCONFIRMED: the client said a 1kg empty
-            # box eats into the limit (client-requirements.md:104), so 0
-            # overstates capacity.
-            "tare_mass": _grams(b.get("tare_weight", 0), f"{where}.tare_weight",
-                                allow_negative=False),
-            "max_contents_mass": _grams(
-                _require(b, "max_weight", where), f"{where}.max_weight",
-                allow_negative=False),
+            "tare_mass": tare,
+            "max_contents_mass": gross - tare,
         })
 
     return {"order_id": _text(_require(payload, "order_id", "request"), "order_id"),

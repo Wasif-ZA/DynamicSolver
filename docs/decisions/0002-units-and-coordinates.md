@@ -1,6 +1,7 @@
 # ADR-0002: Integer millimetres and grams, origin at the inside corner
 
-- **Status:** accepted
+- **Status:** accepted. The axis convention (y up) is superseded by [ADR-0006](0006-z-up-axes.md);
+  the units and the corner rule still stand.
 - **Date:** 2026-08-05
 
 ## Context

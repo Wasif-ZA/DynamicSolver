@@ -19,15 +19,19 @@ def health() -> dict:
 
 
 @app.post("/v1/solve")
-async def solve_endpoint(request: Request) -> dict:
-    payload = await request.json()
+async def solve_endpoint(request: Request, optimise: bool = False) -> dict:
     try:
-        return solve(payload)
+        payload = await request.json()
+    except ValueError as e:
+        raise HTTPException(status_code=400,
+                            detail="request body is not valid JSON") from e
+    try:
+        return solve(payload, optimise=optimise)
     except io.RequestError as e:
         raise HTTPException(status_code=422, detail=str(e)) from e
 
 @app.post("/v1/solve/portal")
-async def solve_portal_endpoint(request: Request) -> dict:
+async def solve_portal_endpoint(request: Request, optimise: bool = False) -> dict:
     """Same solver, Portal's field names in.
 
     A separate route rather than teaching parse_request two vocabularies:
@@ -44,6 +48,6 @@ async def solve_portal_endpoint(request: Request) -> dict:
         raise HTTPException(status_code=422,
                             detail=f"malformed Portal request: {e}") from e
     try:
-        return solve(contract_request)
+        return solve(contract_request, optimise=optimise)
     except io.RequestError as e:
         raise HTTPException(status_code=422, detail=str(e)) from e

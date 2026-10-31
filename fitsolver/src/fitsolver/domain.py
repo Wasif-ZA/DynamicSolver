@@ -31,6 +31,7 @@ class Carton:
     inner_dims: tuple[int, int, int]     # mm
     tare_mass: int                       # g
     max_contents_mass: int | None = None
+    maximum_boxes: int | None = None     # most uses per solution; None = unlimited
 
     @property
     def volume(self) -> int:

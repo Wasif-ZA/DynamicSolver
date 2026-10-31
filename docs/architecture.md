@@ -3,219 +3,153 @@
 How the solver is put together, and why. Read
 [`client-requirements.md`](client-requirements.md) first, then [`contract.md`](contract.md).
 
-Written in C++ ([ADR-0004](decisions/0004-cpp-implementation.md)).
-
-The shape below is driven by one thing the client said repeatedly: he wants this **extensible**, and
-the concrete extension he named is **modes**. So the design's job is to make "add fluid mode" a new
-file rather than a rewrite.
+The solver is the Python package `fitsolver`
+([ADR-0005](decisions/0005-python-implementation.md)). The algorithm that runs is **greedy2**
+([ADR-0007](decisions/0007-greedy2-is-the-solver.md)).
 
 ## The pipeline
 
 ```
-  request  ->  validate  ->  expand  ->  select  ->  place  ->  measure  ->  response
-                              units      boxes      units      utilisation
+request -> io.parse_request -> engine.solve -> greedy2.pack -> io.emit_document -> response
+           validate, expand                  choose cartons,   self-contained
+           quantities                        place items       solution document
 ```
 
-| Stage | Does what |
-|---|---|
-| **validate** | Reject malformed input early with a clear reason. An item bigger than every box is `NO_BOX_FITS` before we try to pack anything. |
-| **expand** | Turn order *lines* into *units*. `quantity: 3` becomes three things to place. Everything after this deals in units. |
-| **select** | Decide which box type to open next. |
-| **place** | Decide where a unit goes inside an open container. **This is the mode-specific part.** |
-| **measure** | Volume and weight utilisation, timings, derive `status`. |
+| Step | File | Does what |
+|---|---|---|
+| Parse | `io.py` | Reads the JSON request into plain data types. Bad items become per-item rejects; a request that is unusable as a whole raises `RequestError` (a 422). `quantity: 3` becomes three items. |
+| Solve | `engine.py` | One function, `solve(payload, optimise=False)`. Every caller uses it: the API, the Portal and the tests. |
+| Pack | `greedy2/pack.py` | Decides which cartons to use and where each item goes. |
+| Further Optimise | `greedy2/optimise.py` | Only when `optimise=True`. See [Further Optimise](#further-optimise). |
+| Emit | `io.py` | Builds the solution document. Labels, sizes and masses are repeated in every placement so the visualiser needs no second request. |
 
-Only **place** differs between modes. Standard mode does real geometry. Fluid mode compares total
-volumes and skips geometry. Own-packaging short-circuits before `select`. Everything else is shared,
-which is the whole point.
+**JSON stops at `io.py`.** Nothing past it knows JSON exists, so the geometry is tested without
+parsing anything, and a contract change touches one file.
 
-## Proposed layout
+**Portal requests** come in through `portal.py`, which translates the Portal's field names
+(PascalCase, kilograms) into the contract (snake_case, grams). In the monorepo, the Portal backend
+does the same translation in its own `solver_adapter.py` and calls `engine.solve` directly.
+
+## Package layout
 
 ```
-include/dynamicsolver/     public headers, what a consumer includes
-  geometry.hpp             Dimensions, Position, Orientation
-  domain.hpp               BoxType, Item, Unit, Placement, Container
-  rules.hpp                RuleSet
-  strategy.hpp             PackingStrategy interface
-  solver.hpp               the one entry point
-src/
-  geometry.cpp
-  domain.cpp
-  rules.cpp
-  strategy/
-    standard.cpp           the mode we build
-    registry.cpp           name -> strategy
-  io/
-    json.cpp               contract <-> domain types. Isolated on purpose
-  solver.cpp
-tests/
-apps/
-  cli.cpp                  read a request on stdin, write a response on stdout
+fitsolver/src/fitsolver/
+  domain.py          Item, Carton, Placement, PackedCarton, Reject, Solution. Plain data.
+  io.py              JSON in, JSON out. Validation and reject codes live here.
+  engine.py          solve(payload, optimise=False). The one entry point.
+  api.py             FastAPI: /v1/health, /v1/solve, /v1/solve/portal
+  portal.py          Portal field names -> contract field names
+  greedy2/
+    pack.py          the solver
+    geometry.py      integer geometry: fits, overlaps, support, corner points
+    optimise.py      Further Optimise (CP-SAT, opt-in)
+    README.md        how greedy2 works, step by step
+    DESIGN_NOTES.md  what was measured, kept and rejected, with numbers
+  pack.py, geometry.py   v1, frozen as a baseline. Not used by the engine.
 ```
 
-**The JSON layer is deliberately isolated.** Domain types know nothing about JSON. That keeps the
-geometry testable without parsing anything, and means a contract change touches one directory.
+## How greedy2 packs an order
 
-## Types
+The short version. [`greedy2/README.md`](../fitsolver/src/fitsolver/greedy2/README.md) has the full
+walkthrough and `DESIGN_NOTES.md` has the measurements.
 
-### Geometry
+1. **Reject what can never fit.** An item no carton type can hold, by size or by mass, is rejected
+   up front with the reason.
+2. **Canonical order.** Items are sorted by content, so the same goods in a different order give
+   the same layout.
+3. **Conflict groups.** Items that may not share a carton (different dangerous-goods classes, or an
+   explicit `incompatible_with`) go into separate groups that pack independently.
+4. **Lower bound.** The fewest cartons any answer could use. A pass that reaches it stops the solve.
+5. **Several orderings, best kept.** Four named orderings, then seeded random restarts. The number
+   of passes comes from the time budget and a fixed cost table, never from a clock.
+6. **Fill one carton at a time.** Each round, every carton type with uses left is test-filled and
+   the one packing the most volume wins.
+7. **Place at the lowest live corner point** where the item fits inside the walls, overlaps
+   nothing, and has at least 70% of its base supported.
+8. **Try to remove a carton** by emptying the emptiest one into the others, or repacking the last
+   two or three into one fewer. Only taken if it removes a carton.
 
-Value types. Small, copyable, no allocation, no inheritance.
+**The objective**, in order: fewest unplaced items, then fewest cartons, then least total carton
+volume. Fill rate is reported but never optimised, because it rewards many small tight cartons.
 
-```cpp
-struct Dimensions {          // integer millimetres, always > 0
-    int width, height, depth;
+## Constraints the solver enforces
 
-    [[nodiscard]] std::int64_t volume() const noexcept;
-    [[nodiscard]] bool fitsInside(const Dimensions& outer) const noexcept;
-};
+| Constraint | Where | Notes |
+|---|---|---|
+| Fits inside the carton, no overlaps | `geometry.py` | Exact integer checks. Touching faces are fine. |
+| 70% of each item's base supported | `geometry.supported` | Nothing floats. |
+| Rotation rules | `geometry.orientations` | `any`, `upright` (height stays vertical) or `fixed`. |
+| Mass limit | `pack.place` | `max_contents_mass` limits the contents. Tare is not counted against it. |
+| Dangerous goods and incompatibility | `pack.split_compatible` | Different DG classes, or items naming each other in `incompatible_with`, never share a carton. |
+| Box stock (`maximum_boxes`) | `pack.pack_one` | A carton type is used at most this many times per order ([ADR-0008](decisions/0008-enforce-maximum-boxes.md)). |
 
-struct Position {            // corner nearest the origin, never a centre
-    int x, y, z;
-};
-```
+## Further Optimise
 
-**`volume()` returns `std::int64_t`, not `int`.** A shipping container is about 12000 x 2400 x 2600
-mm, which is roughly 7.5e10 and overflows a 32-bit int by a factor of 35. Signed overflow is
-undefined behaviour, so this is not a wrong number, it is a bug the optimiser is allowed to make
-arbitrarily weird. Get it right in the type from day one.
+An opt-in second step behind the Portal's "Further Optimise" button
+([ADR-0009](decisions/0009-further-optimise.md)). Normal solving never runs it.
 
-Lengths stay `int`. Millimetres of a warehouse box never approach 2.1 billion.
+1. greedy2 answers first. Its answer is always the fallback.
+2. Only orders of **30 items or fewer**, with no rejects and one conflict group, go further.
+3. It tries to fit the **whole order in one smaller carton**, starting with the next size down from
+   greedy2's carton, and **stops at the first one that fits**.
+4. Google's CP-SAT solver searches for that layout under greedy2's own rules (rotations, inside
+   the carton, no overlaps, 70% support, mass limit, `maximum_boxes`). The layout is re-checked
+   with greedy2's geometry before it is used.
+5. **Hard limit of 30 seconds.** If nothing is found in time, greedy2's answer is returned.
 
-### Domain
-
-```cpp
-class BoxType {              // a TYPE of carton, not a physical box
-    std::string id_, name_;
-    Dimensions interior_;    // usable space inside, wall thickness excluded
-    std::optional<int> maxWeight_;   // grams, gross, includes tare
-    int tareWeight_;
-    std::optional<int> available_;   // nullopt = effectively unlimited
-};
-```
-
-This class is where the client's "same abstraction for a shipping container and a small parcel"
-lands. He raised it unprompted and it is the clearest thing he asked for on the design side.
-
-```cpp
-class Container {            // one PHYSICAL box being filled
-public:
-    [[nodiscard]] std::optional<Position> findSpotFor(const Unit&) const;
-    bool place(const Unit&, Position, Orientation);
-    [[nodiscard]] bool accepts(const Unit&, const RuleSet&) const;
-private:
-    const BoxType* type_;
-    std::vector<Placement> placements_;
-    // plus whatever free-space bookkeeping the strategy needs
-};
-```
-
-`findSpotFor` returning `std::optional<Position>` rather than throwing matters. "This does not fit"
-is a normal, expected answer that happens thousands of times per solve, not an error.
-
-### Strategy
-
-One abstract base class, one virtual call per solve. This is the extension point.
-
-```cpp
-class PackingStrategy {
-public:
-    virtual ~PackingStrategy() = default;
-    [[nodiscard]] virtual PackingResult pack(
-        std::span<const Unit> units,
-        std::span<const BoxType> boxes,
-        const RuleSet& rules) const = 0;
-};
-```
-
-Adding fluid mode is a new class and a line in the registry. Nothing else changes. That is the
-concrete answer to the client's extensibility ask, and it is worth saying so in the report.
-
-## Placement heuristics
-
-Inside standard mode, how we choose a spot. Start with the simplest thing that works, measure, then
-improve against the same inputs:
-
-1. **First fit decreasing.** Sort units largest first, drop each into the first container it fits.
-   The baseline. Simple, fast, and surprisingly hard to beat by much.
-2. **Extreme points.** Track candidate corners created by each placement rather than scanning a
-   grid. The usual next step, and where most of the real gain is.
-3. **Best fit or lookahead.** Try several candidate positions and score them on wasted space.
-
-Record what each scores on the same orders. That comparison is good evidence for the Development
-Process mark, and it is the honest answer to "how do you know it is efficient?"
-
-## C++ specifics worth agreeing up front
-
-**Standard: C++20.** Available in every current compiler. `std::span`, designated initialisers and
-concepts all earn their keep here. Avoid C++23 library features; support is still patchy across the
-machines the team will actually use.
-
-**Exceptions are for programmer error, not for packing outcomes.** An item that does not fit is a
-return value, not a throw. Expected failures go back as `unpacked` entries with a reason. Reserve
-throwing for malformed input at the JSON boundary and for genuine invariant violations.
-
-**No raw `new` or `delete`, no owning raw pointers.** Values by default, `std::unique_ptr` when
-polymorphism forces it (the strategy registry). Non-owning observation is a reference or a raw
-pointer that never deletes.
-
-**Pass by `const&` or `std::span`.** The hot path runs thousands of fit checks per solve. Copying a
-vector of units inside a loop is the easiest available performance mistake.
-
-**`[[nodiscard]]` on anything that answers a question.** `findSpotFor` returning a position you
-ignore is always a bug.
-
-**Build with sanitizers in debug.** `-fsanitize=address,undefined`. Geometry code with index
-arithmetic is exactly the code that benefits, and the integer overflow above is the kind of thing
-UBSan catches on the spot.
+The response marks an improved answer with `solver.tier: 2`. OR-Tools is an optional install
+(`pip install -e ".[optimise]"`); without it the button returns greedy2's answer.
 
 ## Rules that shaped this
 
-**Integer millimetres and grams, everywhere.** No floats in geometry. Two items 0.1 mm apart from
-float drift is a bug you cannot see and cannot reproduce. See
-[ADR-0002](decisions/0002-units-and-coordinates.md).
+**Integer millimetres and grams.** No floats in geometry, so overlap checks are exact
+([ADR-0002](decisions/0002-units-and-coordinates.md)).
 
-**Rotation is resolved before the response leaves us.** The contract carries size *as placed*. The
-visualiser team never does geometry maths. This assumes rotation is allowed at all, which is
-[open question 1](client-requirements.md#open-questions-for-the-client).
+**z is up** ([ADR-0006](decisions/0006-z-up-axes.md)). The origin is the inside minimum corner of
+the carton, and a position is the item's corner nearest the origin, never its centre.
 
-**`step` is global and gap-free.** The client's step-by-step view is the differentiator, so pack
-order is a first-class output, not something a consumer reconstructs.
+**Sizes are as placed.** The response carries dimensions after rotation, so the visualiser never
+does rotation maths.
 
-**Weight fields are modelled but not enforced.** He said they are not hitting the limit yet.
-Carrying the fields now makes enforcing them later a check, not a schema change.
-
-**No persistence, no auth, no queue.** One request in, one response out. He ruled auth out, and the
-load numbers do not justify a queue.
+**Deterministic.** The same request gives the same layout on any machine: the only randomness is
+seeded from the request, and no clock is read during a solve. Further Optimise is the one
+exception, because it runs only when asked for.
 
 ## Performance
 
-The bar is 1 to 2 seconds for a **single order**. Not aggregate throughput. Do not spend the
-semester on concurrency.
+The bar is 1 to 2 seconds for **one order** (R2). It is a latency target, not a throughput one.
 
-3D bin packing is NP-hard. We are not proving optimality, we are finding a good answer fast. The
-honest framing in the report is "heuristic, measured against these benchmarks", never a claim of
-optimality.
+3D bin packing is NP-hard, so greedy2 is a heuristic: it finds a good answer fast, and never
+claims optimality. Measured against proven optima on 62 small orders, it is 8.7% above optimum
+with no mass limits and 2.6% above with realistic mass limits, and never more than one carton over.
 
-Get it correct first, measure with a realistic order, then optimise only what the measurement says
-is slow. C++ makes it tempting to micro-optimise early; the algorithm choice will dominate anything
-you do at that level. `metrics.solveTimeMs` ships in every response so we always have the number.
+Small orders finish in milliseconds and spend the rest of the budget on extra orderings. One pass
+over about 300 items costs roughly the whole budget, so very large orders run a single pass and
+can overrun. `solver.elapsed_ms` is in every response.
 
 ## Testing
 
-**Whoever writes the implementation should not also write its tests.** Pair up across the team. The
-person who wrote the code shares its blind spots, and their tests confirm what it does rather than
-what it should do. This applies to AI-generated code too: do not generate an implementation and its
-tests from the same context.
+The [contract invariants](contract.md#invariants) are the test list.
 
-The [contract invariants](contract.md#invariants) are the test list. In rough order of value:
+| Tests | Check |
+|---|---|
+| `test_properties.py` (Hypothesis) | In bounds, no overlaps, support, mass, conflict groups, conservation, determinism, on random orders |
+| `test_greedy2_layouts.py` | Layouts match a recorded baseline placement by placement, so any behaviour change is visible |
+| `test_greedy2_max_boxes.py` | `maximum_boxes` is never exceeded, including across groups and in the repack move |
+| `test_greedy2_optimise.py` | Further Optimise finds the one smaller carton, respects the limits, falls back cleanly. Skipped when OR-Tools is not installed. |
+| `test_contract.py`, `test_portal.py` | The request and response shapes, and the Portal translation |
 
-1. **Geometry.** Nothing sticks out of a container, nothing overlaps. Touching faces are legal. This
-   is the bug class a human eyeballing a visualiser will not catch reliably.
-2. **Conservation.** Every unit appears exactly once, placed or unpacked. Never both, never neither.
-   Easy to get wrong, easy to test, embarrassing to ship.
-3. **Rules.** Two incompatible groups never share a container.
-4. **Steps.** Contiguous `1..n` across the whole response.
+CI runs ruff and the full suite on Python 3.11 to 3.14, plus a contract job that validates every
+fixture against the published schema.
 
-Property-based testing suits 1 and 2 unusually well: generate random orders, assert the invariants
-hold. Worth doing once the basics pass, and it finds the packing edge cases nobody thinks to write
-by hand.
+**Whoever writes an implementation should not also write its tests.** The author shares the code's
+blind spots, and their tests confirm what it does rather than what it should do. This applies to
+AI-generated code too.
+
+## Extending it
+
+The client asked for this to be **extensible**, naming **modes** (fluid, own packaging) as the
+example. Every packer shares one signature, `pack(items, cartons, time_budget_ms, seed) ->
+Solution`, and `Solution` already carries a `mode` field (`rigid` today). A new mode is a new
+module with that signature, selected in `engine.solve`. Nothing in `io.py` or the contract has to
+change.

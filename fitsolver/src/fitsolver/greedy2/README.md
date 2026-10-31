@@ -59,6 +59,8 @@ realistic mass limits (v1: 13.2%). Full tables are in `DESIGN_NOTES.md`.
    test-filled and the one packing the most volume is kept. This is the most
    important decision in the solver: opening the smallest carton that fits is
    5 to 20 times worse.
+   A carton type with `maximum_boxes` stops being usable once the solution
+   has opened that many of it.
 7. **Place items at live corner points.** Inside a carton, each item goes at the
    lowest corner point where it fits inside the walls, overlaps nothing, and has
    at least 70% of its base supported.
@@ -127,6 +129,7 @@ re-measuring on the deployment machine.
 | `test_greedy2_contact.py` | the contact score arithmetic, and that it is off |
 | `test_greedy2_phase11.py` | the mass ordering and the packed-volume carton choice |
 | `test_greedy2_phase12.py` | restarts are deterministic, elimination never makes things worse |
+| `test_greedy2_max_boxes.py` | no carton type is used more than its `maximum_boxes` |
 
 `tests/data/greedy2_layouts.json` records about 2500 placements. Re-record with
 `python tests/golden_layouts.py --write`, and only after checking the change is
